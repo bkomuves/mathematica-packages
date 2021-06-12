@@ -4,6 +4,7 @@
 
 Clear["Useful`*"];
 BeginPackage[ "Useful`"]
+Needs["Combinatorica`"]
 
 toExportForm::usage = "convert to export form"
 
@@ -52,7 +53,7 @@ partitionReplace1::usage = "partitionReplace1[lam,i,y] replaces the i-th element
 partitionReplaceParts::usage = "partitionReplaceParts[lam,{{i1,y1},{i2,y2}}] replaces the i1-th element with y1 etc; but allows overindexing"
 
 FitsInto::usage = "FitsInto[w, h, lam] returns true if the partition lambda fits in to a W x H box"
-GrassmannBetti::usage = "assmannBetti[n, k, d] return d-th Betti number of the grassmannian of Gr_k(C^n)"
+GrassmannBetti::usage = "GrassmannBetti[n, k, d] return 2d-th Betti number of the grassmannian of Gr_k(C^n)"
 
 SortingPermutation::usage = "returns a permutation sorting a list" 
 ReverseSortingPermutation::usage = "returns a permutation sorting a list in reverse order"
@@ -207,7 +208,7 @@ partitionReplaceParts[list_, iys_] := If[ ListQ[iys] ,
 
 FitsInto[w_, h_, part_] :=  Length[part] <= w && (EmptyPartQ[part] || part[[1]] <= h)
 
-GrassmannBetti[n_, k_, j_] := Length[Select[Partitions[j], FitsInto[n - k, k, #] &]]
+GrassmannBetti[n_, k_, j_] := Length[Select[Combinatorica`Partitions[j], FitsInto[n - k, k, #] &]]
 
 (* ----------- SORTING PERMUTATION ------------------------------ *)
 
