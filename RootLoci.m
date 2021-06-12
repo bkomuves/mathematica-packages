@@ -1,4 +1,7 @@
 
+(* Coincident root loci *)
+
+
 Clear["RootLoci`*"];
 BeginPackage[ "RootLoci`"]
 Needs["Useful`"]

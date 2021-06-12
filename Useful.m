@@ -1,4 +1,7 @@
 
+(* Miscellenaous useful functions *)
+
+
 Clear["Useful`*"];
 BeginPackage[ "Useful`"]
 

@@ -1,4 +1,6 @@
 
+(* Symmetric polynomials, Schur functions and so on *)
+
 
 (* example usage:
 
