@@ -60,7 +60,7 @@ ReverseSortingPermutation::usage = "returns a permutation sorting a list in reve
 
 (* ========================================================================== *)
 
-Begin[ "Private`"]
+Begin[ "`Private`"]
 
 toExportForm[X_] := 
  ToString[X, FormatType -> InputForm, PageWidth -> Infinity, 

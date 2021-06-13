@@ -79,12 +79,29 @@ lookupSinE::usage = "lookupSinE[lam,e] looks up the expansion of s[lam] in eleme
 
 (* ========================================================================== *)
 
-Begin[ "Private`"]
+Begin[ "`Private`"]
+
+SetAttributes[ Global`e , {Protected, ReadProtected} ]; 
+SetAttributes[ Global`e , {Protected, ReadProtected} ]; 
+SetAttributes[ Global`h , {Protected, ReadProtected} ]; 
+SetAttributes[ Global`p , {Protected, ReadProtected} ]; 
 
 ss[i__] := mkSubscript[ Global`s, i ];
 ee[i__] := mkSubscript[ Global`e, i ];
 hh[i__] := mkSubscript[ Global`h, i ];
 pp[i__] := mkSubscript[ Global`p, i ];
+
+(* ------ internal free variables used in tables ------ *)
+
+SetAttributes[ Schur`Private`S , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ Schur`Private`E , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ Schur`Private`H , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ Schur`Private`P , {Protected, ReadProtected, Locked} ]; 
+
+SS = Schur`Private`S
+EE = Schur`Private`E
+HH = Schur`Private`H
+PP = Schur`Private`P
 
 (* --------------- misc ------------------- *)
 
@@ -229,22 +246,22 @@ Clear[JacobiTrudiCached]
 JacobiTrudiCached[{}] = 1;
 JacobiTrudiCached[lam_] := JacobiTrudiCached[lam] = Module[
    {n = Length[lam], hh, A},
-   hh[i_] := If[i < 0, 0, If[i == 0, 1, Subscript[Private`H, i]]];
+   hh[i_] := If[i < 0, 0, If[i == 0, 1, Subscript[HH, i]]];
    A = Table[Table[hh[lam[[i]] + j - i], {j, 1, n}], {i, 1, n}];
    Det[A]
    ]
 
 JacobiTrudiH[lam_] := JacobiTrudiH[lam, Global`h]
-JacobiTrudiH[lam_, h_] := JacobiTrudiCached[lam] /. {Private`H -> h}
+JacobiTrudiH[lam_, h_] := JacobiTrudiCached[lam] /. {HH -> h}
 
 JacobiTrudiE[lam_] := JacobiTrudiE[lam, Global`e]
-JacobiTrudiE[lam_, e_] := JacobiTrudiCached[DualPart[lam]] /. {Private`H -> e}
+JacobiTrudiE[lam_, e_] := JacobiTrudiCached[DualPart[lam]] /. {HH -> e}
 
 lookupSinH[lam_] := lookupSinH[lam, Global`h]
-lookupSinH[lam_, h_] := JacobiTrudiCached[lam] /. {Private`H -> h}
+lookupSinH[lam_, h_] := JacobiTrudiCached[lam] /. {HH -> h}
 
 lookupSinE[lam_] := lookupSinE[lam, Global`e]
-lookupSinE[lam_, e_] := JacobiTrudiCached[DualPart[lam]] /. {Private`H -> e}
+lookupSinE[lam_, e_] := JacobiTrudiCached[DualPart[lam]] /. {HH -> e}
 
 
 sToE[term_] := sToE[term, s, e]
@@ -324,15 +341,15 @@ calc$hToS[term_, h_, s_] := Module[
   ]
 
 Clear[cached$EinS];
-cached$EinS[lam_] := cached$EinS[lam] = 
-  calc$eToS[ mkSubscript[Private`e, lam], Private`e, Private`S]
+cached$EinS[lam_] := cached$EinS[lam] = Module[ {e} ,
+  calc$eToS[ mkSubscript[e, lam], e, SS] ]
 
 Clear[cached$HinS];
-cached$HinS[lam_] := cached$HinS[lam] = 
-  calc$hToS[ mkSubscript[Private`h, lam], Private`h, Private`S]
+cached$HinS[lam_] := cached$HinS[lam] = Module[ {h},
+  calc$hToS[ mkSubscript[h, lam], h, SS] ]
 
-lookupEinS[lam_, s_] := cached$EinS[lam] /. {Private`S -> s}
-lookupHinS[lam_, s_] := cached$HinS[lam] /. {Private`S -> s}
+lookupEinS[lam_, s_] := cached$EinS[lam] /. {SS -> s}
+lookupHinS[lam_, s_] := cached$HinS[lam] /. {SS -> s}
 
 eToS[term_]          := eToS[term, Global`e, Global`s]
 eToS[term_, e_]      := eToS[term, e, Global`s]
@@ -362,16 +379,16 @@ hToS[term0_, h_, s_] := Module[
 
 Clear[cached$EinH];
 cached$EinH[lam_] := 
- Module[{s = Private`S, e = Private`E, h = Private`H},
-  sToH[eToS[mkSubscript[e, lam], e, s], s, h]]
+ Module[ {e,s},
+  sToH[eToS[mkSubscript[e, lam], e, s], s, HH]]
 
 Clear[cached$HinE];
 cached$HinE[lam_] := 
- Module[{s = Private`S, e = Private`E, h = Private`H},
-  sToE[hToS[mkSubscript[h, lam], h, s], s, e]]
+ Module[ {h,s},
+  sToE[hToS[mkSubscript[h, lam], h, s], s, EE]]
 
-lookupEinH[lam_, h_] := cached$EinH[lam] /. {Private`H -> h}
-lookupHinE[lam_, e_] := cached$HinE[lam] /. {Private`E -> e}
+lookupEinH[lam_, h_] := cached$EinH[lam] /. {HH -> h}
+lookupHinE[lam_, e_] := cached$HinE[lam] /. {EE -> e}
 
 eToH[term_]          := eToH[term, Global`e, Global`h]
 eToH[term_, e_]      := eToH[term, e, Global`h]
@@ -400,7 +417,7 @@ hToE[term0_, h_, e_] := Module[
 (* ------------------------------------ *)
 
 sToX[term_, s_, {x_, n_}] := sToX[term, s, x, n]
-sToX[term_, s_, x_, n_] := Module[{e = Private`e},
+sToX[term_, s_, x_, n_] := Module[ {e},
   eToX[ sToE[term, s, e], e, {x, n}]]
 
 
@@ -441,12 +458,13 @@ xToE[term_, x_, n_, e_] := Module[
   ]
 
 xToH[term_, {x_, n_}, h_] := xToH[term, x, n, h]
-xToH[term_, x_, n_, h_] := 
- eToH[ xToE[term, {x, n}, Private`e], Private`e, h]
+xToH[term_, x_, n_, h_] := Module[ {e} ,
+ eToH[ xToE[term, {x, n}, e], e, h] ]
 
 xToS[term_, {x_, n_}, s_] := xToS[term, x, n, s]
-xToS[term_, x_, n_, s_] := 
- eToS [xToE[term, {x, n}, Private`e], Private`e, s]
+xToS[term_, x_, n_, s_] := Module[ {e},
+ eToS[ xToE[term, {x, n}, e], e, s] ]
+
 
 (* ----------------------------------------------- *)
 
