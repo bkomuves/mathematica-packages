@@ -41,7 +41,12 @@ classOfPn         ::usage = "For example classOfPn[CSM,ProjSpace[n,u]] returns t
 abstractGhostClass::usage = "abstractGhostClass[m,S] returns the m-th abstract ghost class in terms of S_n = Sym^n"
 genericGhostClass ::usage = "genericGhostClass[class,space] returns the m-th ghost class computed from the classes of P^n"
 ghostClass        ::usage = "ghostClass[class,space] returns the m-th ghost class, computed via hardcoded formulas"
-umbralGhostClass  ::usage = "umbralGhostClass[class,m,z] returns the m-th ghost clsas in the `umbral z-coordinates'"
+umbralGhostClass  ::usage = "umbralGhostClass[class,m,z] returns the m-th ghost clsas in the 'umbral z-coordinates'"
+
+LSeries      ::usage = "LSeries[n,d] is the \[ScriptCapitalL](x^d;h^d) power series up to degree n (d can be omitted)"
+PSeries      ::usage = "PSeries[n,d] is the \[ScriptCapitalP](x^d;h^d) power series up to degree n (d can be omitted)"
+LPoly        ::usage = "LPoly[k] is the degree k term of \[ScriptCapitalL](x;h); LPoly[k,d] is the after the substitution by x -> x^d"
+PPoly        ::usage = "PPoly[k] is the degree k term of \[ScriptCapitalP](x;h); PPoly[k,d] is the after the substitution by x -> x^d"
 
 PartitionClosure   ::usage  = "PartitionClosure[p] returns the set of coarsenings of a partition"
 PartitionClosure$v1::usage  = "PartitionClosure$v1[p] is an alternative (slower?) implementation"
@@ -250,6 +255,38 @@ umbralGhostClass[ EquivMotivicChern , m_ , z_ ] :=
            ( X^m*(1+z*(1-Y))^m - Y^m*(1+z*(1-X))^m ) / (X^m -Y^m) + 
   (-y)^m * ( X^m*(1+z*(1-X))^m - Y^m*(1+z*(1-Y))^m ) / (X^m -Y^m)
   
+(* ---------------- The L and P poewr series ------------- *)
+
+xx[i_] := Subscript[x, i]
+xxs[n_] := Table[xx[i], {i, 1, n}]
+
+ClearAll[LSeries, PSeries, LSeries$check, LPoly, PPoly];
+
+LSeries[n_] := LSeries[n] = 
+  Normal[Series[Log[1 + Sum[xx[i]*h^i, {i, 1, n}]], {h, 0, n}]]
+PSeries[n_] := PSeries[n] =
+  Normal[Series[
+    Sum[MoebiusMu[d]/d*LSeries[n, d], {d, 1, n}], {h, 0, n}]]
+LSeries$check[n_] := LSeries$check[n] =
+  Normal[Series[Sum[1/d*PSeries[n, d], {d, 1, n}], {h, 0, n}]]
+
+LSeries[n_, d_] := Module[{m = Quotient[n, d]},
+  LSeries[m] /. {h -> h^d} /. Table[xx[i] -> xx[i]^d, {i, 1, m}]]
+PSeries[n_, d_] := Module[{m = Quotient[n, d]},
+  PSeries[m] /. {h -> h^d} /. Table[xx[i] -> xx[i]^d, {i, 1, m}]]
+
+LPoly[k_] := Coefficient[LSeries[k], h, k]
+PPoly[k_] := Coefficient[PSeries[k], h, k]
+LPoly[k_, d_] := LPoly[k] /. Table[xx[i] -> xx[i]^d, {i, 1, k}]
+PPoly[k_, d_] := PPoly[k] /. Table[xx[i] -> xx[i]^d, {i, 1, k}]
+
+(*
+lhs = Sum[PSeries[10, m]*Subscript[A, m]/m, {m, 1, 10}];
+rhs = Sum[Subscript[B, k]/k*LSeries[10, k], {k, 1, 10}];
+solB = mySolveAlways$v2[lhs, rhs, Prepend[xxs[10], h], Table[Subscript[B, i], {i, 1, 10}]]
+solA = mySolveAlways$v2[lhs, rhs, Prepend[xxs[10], h], Table[Subscript[A, i], {i, 1, 10}]]
+*)
+
 
 (* ---------------- closure set of partitions ------------- *)
 
