@@ -16,6 +16,59 @@ Needs["Combinatorica`"]
 Needs["Useful`"]
 Needs["SymP1`"]
 
+(* ------------- supported characteristic classes ------------- *)
+
+(* characteristic classes *)
+
+FundClass              = Symbol["FundClass"        ]; 
+CSM                    = Symbol["CSM"              ]; 
+ToddClass              = Symbol["ToddClass"        ]; 
+Hirzebruch             = Symbol["Hirzebruch"       ]; 
+UnnormalizedHirzebruch = Symbol["UnnormHirzebruch" ]; 
+MotivicChern           = Symbol["MotivicChern"     ]; 
+EquivFundClass         = Symbol["EquivFundClass"   ]; 
+EquivCSM               = Symbol["EquivCSM"         ]; 
+EquivMotivicChern      = Symbol["EquivMC"          ]; 
+
+SetAttributes[ FundClass         , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ CSM               , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ ToddClass         , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ HirzebruchClass   , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ UnnormHirzebruch  , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ MotivicChern      , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ EquivFundClass    , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ EquivCSM          , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ EquivMotivicChern , {Protected, ReadProtected, Locked} ]; 
+
+Theory[FundClass]          = Cohomology;
+Theory[CSM]                = Cohomology;
+Theory[ToddClass]          = Cohomology;
+Theory[HirzebruchClass]    = Cohomology;
+Theory[UnnormHirzebruch]   = Cohomology;
+Theory[MotivicChern]       = KTheory;
+Theory[EquivFundClass]     = EquivCohomology;
+Theory[EquivCSM]           = EquivCohomology;
+Theory[EquivMotivicChern]  = EquivKTheory;
+Theory[AbstractClass]      = AbstractTheory;
+
+(* ... and genera ... *)
+
+EulerChar      = Symbol["EulerChar"       ];
+ToddGenus      = Symbol["ToddGenus"       ];
+ChiY           = Symbol["ChiY"            ];
+PoincarePoly   = Symbol["PoincarePoly"    ];
+HodgeDeligneE  = Symbol["HodgeDeligneE"   ];
+NumberOfPoints = Symbol["NumberOfPoints"  ];
+HasseZeta      = Symbol["HasseZeta"       ];
+
+SetAttributes[ EulerChar      , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ ToddGenus      , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ ChiY           , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ PoincarePoly   , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ HodgeDeligneE  , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ NumberOfPoints , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ HasseZeta      , {Protected, ReadProtected, Locked} ]; 
+
 FundClass              ::usage = "The Fundamental class in cohomology"
 CSM                    ::usage = "The Chern-Schwartz-MacPherson class"
 ToddClass              ::usage = "The (motivic) Todd class"           
@@ -36,6 +89,8 @@ PoincarePoly   ::usage = "The virtual Poincare polynomial"
 HodgeDeligneE  ::usage = "The Hodge-Deligne E-polynomial" 
 NumberOfPoints ::usage = "The number of points over a finite field F_q"
 HasseZeta      ::usage = "The Hasse-Weil zeta function of a variety over F_q"     
+
+(* ---------- various classes --------- *)
 
 classOfPn         ::usage = "For example classOfPn[CSM,ProjSpace[n,u]] returns the CSM class of Sym^nP1 = P^n"
 abstractGhostClass::usage = "abstractGhostClass[m,S] returns the m-th abstract ghost class in terms of S_n = Sym^n"
@@ -78,58 +133,6 @@ HH = RootLoci`Private`H
 UU = RootLoci`Private`U
 NN = RootLoci`Private`N
 
-(* ------------- supported characteristic classes ------------- *)
-
-(* characteristic classes *)
-
-FundClass              = Symbol["FundClass"        ]; 
-CSM                    = Symbol["CSM"              ]; 
-ToddClass              = Symbol["ToddClass"        ]; 
-Hirzebruch             = Symbol["Hirzebruch"       ]; 
-UnnormalizedHirzebruch = Symbol["UnnormHirzebruch" ]; 
-MotivicChern           = Symbol["MotivicChern"     ]; 
-EquivFundClass         = Symbol["EquivFundClass"   ]; 
-EquivCSM               = Symbol["EquivCSM"         ]; 
-EquivMotivicChern      = Symbol["EquivMC"          ]; 
-
-SetAttributes[ FundClass         , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ CSM               , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ ToddClass         , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ HirzebruchClass   , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ UnnormHirzebruch  , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ MotivicChern      , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ EquivFundClass    , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ EquivCSM          , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ EquivMotivicChern , {Protected, ReadProtected, Locked} ]; 
-
-Theory[FundClass]          = Cohomology;
-Theory[CSM]                = Cohomology;
-Theory[ToddClass]          = Cohomology;
-Theory[HirzebruchClass]    = Cohomology;
-Theory[UnnormHirzebruch]   = Cohomology;
-Theory[MotivicChern]       = KTheory;
-Theory[EquivFundClass]     = EquivCohomology;
-Theory[EquivCSM]           = EquivCohomology;
-Theory[EquivMotivicChern]  = EquivKTheory;
-Theory[AbstractClass]      = AbstractTheory;
-
-(* genera *)
-
-EulerChar      = Symbol["EulerChar"       ];
-ToddGenus      = Symbol["ToddGenus"       ];
-ChiY           = Symbol["ChiY"            ];
-PoincarePoly   = Symbol["PoincarePoly"    ];
-HodgeDeligneE  = Symbol["HodgeDeligneE"   ];
-NumberOfPoints = Symbol["NumberOfPoints"  ];
-HasseZeta      = Symbol["HasseZeta"       ];
-
-SetAttributes[ EulerChar      , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ ToddGenus      , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ ChiY           , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ PoincarePoly   , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ HodgeDeligneE  , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ NumberOfPoints , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ HasseZeta      , {Protected, ReadProtected, Locked} ]; 
 
 (* --------------------------------------------------------- *)
 
