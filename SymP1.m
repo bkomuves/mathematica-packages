@@ -24,7 +24,7 @@ TODO list:
 - Grothendieck-Riemann-Roch
 - documentation / proofs of the algorithms
 - Chern class versions of equivariant cohomology
-- maybe move the umbral stuff here?
+- move the umbral stuff here?
 
 example usage:
 
@@ -48,24 +48,26 @@ Clear["SymP1`*"];
 BeginPackage[ "SymP1`"]
 Needs["Useful`"]
 
-(* ---------------- SUPPORTED THEORIES ---------------------- *)
+(* ---------------- SUPPORTED COHOMOLOGY THEORIES ---------------------- *)
 
-Cohomology::usage      = "Cohomology (non-equivariant)"
-KTheory::usage         = "K-theory (non-equivariant)"
-EquivCohomology::usage = "T^2-equivariant cohomology"
-EquivKTheory::usage    = "T^2-equivariant K-theory"
-AbstractTheory::usage  = "Relative Grothendieck group of varietes"
+TrivialTheory  ::usage = "Trivial theory with arbitrary coefficients (used for genera)"
+Cohomology     ::usage = "Cohomology (non-equivariant)"
+KTheory        ::usage = "K-theory (non-equivariant)"
+EquivCohomology::usage = "\*SuperscriptBox[\[DoubleStruckCapitalT],2] -equivariant cohomology"
+EquivKTheory   ::usage = "\*SuperscriptBox[\[DoubleStruckCapitalT],y] -equivariant K-theory"
+AbstractTheory ::usage = "Relative Grothendieck group of varieties"
 
-ProjSpace::usage = "ProjSpace[n,u] represents the projective space \[DoubleStruckCapitalP]^n with a generator u"
-\[DoubleStruckCapitalP]::usage = "\[DoubleStruckCapitalP][n,u] or \[DoubleStruckCapitalP]^n[u] is the projective space of dim n with a generator u"
+ProjSpace              ::usage = "ProjSpace[n,u] represents the projective space \*SuperscriptBox[\[DoubleStruckCapitalP],n] with a generator u"
+\[DoubleStruckCapitalP]::usage = "\[DoubleStruckCapitalP][n,u] or \*SuperscriptBox[\[DoubleStruckCapitalP],n][u] is the projective space of dim n with a generator u"
 
 Dimension::usage = "the dimension of a projective space"
-Variable::usage  = "the variable (generator) of a projective space"
+Variable ::usage = "the variable (generator) of a projective space"
 
-KTheory             = Symbol["KTheory"];
+TrivialTheory       = Symbol["TrivialTheory"]
 Cohomology          = Symbol["Cohomology"];
-EquivKTheory        = Symbol["EquivariantKTheory"];
+KTheory             = Symbol["KTheory"];
 EquivCohomology     = Symbol["EquivariantCohomology"];
+EquivKTheory        = Symbol["EquivariantKTheory"];
 AbstractTheory      = Symbol["AbstractTheory"];
 
 (*
@@ -73,26 +75,30 @@ EquivCohomologyT2   = Symbol["EquivariantCohomologyT2"];
 EquivCohomologyGL2  = Symbol["EquivariantCohomologyGL2"];
 *)
 
-SetAttributes[ KTheory         , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ TrivialTheory   , {Protected, ReadProtected, Locked} ]; 
 SetAttributes[ Cohomology      , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ EquivKTheory    , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ KTheory         , {Protected, ReadProtected, Locked} ]; 
 SetAttributes[ EquivCohomology , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ EquivKTheory    , {Protected, ReadProtected, Locked} ]; 
 SetAttributes[ AbstractTheory  , {Protected, ReadProtected, Locked} ]; 
+
+standardVar      ::usage = "standardVar[theory] returns the standard generator name for that theory"
+theoryGlobalVars ::usage = "theoryGlobalVars[theory] returns the set of global names associated with that theory (this is relevant for the equivariant theories)"
 
 (* ------------- theory-polymorphic API ------------ *)
 
-relation  ::usage = "For example relation[EquivKTheory,ProjSpace[n,L] returns the relation in the equivariant K-theory of P^n"
-
+relation  ::usage = "For example relation[EquivKTheory,ProjSpace[n,L]] returns the relation in the equivariant K-theory of P^n"
 normalize ::usage = "normalize[theory,A,space(s)] normalizes the class in the (product of) the given spaces"
 
-OmegaPF   ::usage = "OmegaPF[theory,A,space,d,var] is the pushforward of A along the replicating map Omega^d in cohomology"
-DeltaPF   ::usage = "DeltaPF[theory,A,space,vars] is the pushforward of A along the diagonal map Delta^d in cohomology"
-PsiPF     ::usage = "PsiPF[theory,A,spaces,var] is the pushforward of A along the merging map Psi in cohomology"
-CollapsePF::usage = "CollapsePF[theory,A,space] is the pushforward of A along the collapsing map pt:P^n->pt"
+CollapsePF ::usage = "CollapsePF[theory,A,space] is the pushforward of A along the collapsing map pt:\*SuperscriptBox[\[DoubleStruckCapitalP],n] ->pt"
+PsiPF      ::usage = "PsiPF[theory,A,spaces,var] is the pushforward of A along the merging map \[CapitalPsi] in cohomology"
+DeltaPF    ::usage = "DeltaPF[theory,A,space,vars] is the pushforward of A along the diagonal map \*SuperscriptBox[\[CapitalDelta],d] in cohomology"
+OmegaPF    ::usage = "OmegaPF[theory,A,space,d,var] is the pushforward of A along the replicating map \*SuperscriptBox[\[CapitalOmega],d] in cohomology"
+OmegaVecPF ::usage = "OmegaVecPF[theory,A,space,ds,var] is the pushforward along the (\[CapitalPsi] \[SmallCircle] (\*SuperscriptBox[\[CapitalOmega],d1] \[Times] \*SuperscriptBox[\[CapitalOmega],d2] \[Times] ... )) in cohomology"
 
-OmegaPB   ::usage = "cohomOmegaPB[theory,A,space,d,var] is the pullback of A along the replicating map Omega^d in cohomology"
-DeltaPB   ::usage = "cohomDeltaPB[theory,A,space,vars] the pullback of A along the diagonal map Delta^d in cohomology"
-PsiPB     ::usage = "cohomPsiPB[theory,A,spaces,var] is the pullback along the merging map Psi in cohomology"
+OmegaPB   ::usage = "cohomOmegaPB[theory,A,space,d,var] is the pullback of A along the replicating map \*SuperscriptBox[\[CapitalOmega],d] in cohomology"
+DeltaPB   ::usage = "cohomDeltaPB[theory,A,space,vars] the pullback of A along the diagonal map \*SuperscriptBox[\[CapitalDelta],d] in cohomology"
+PsiPB     ::usage = "cohomPsiPB[theory,A,spaces,var] is the pullback along the merging map \[CapitalPsi] in cohomology"
 
 (* ----- cohomology (non-equivariant) ----- *)
 
@@ -143,7 +149,7 @@ equivKTheoryCollapsePF::usage = "equivKTheoryCollapsePF[A,space] is the pushforw
 Begin["`Private`"]
 (* Print[Context[]]; *)
 
-
+(* the Chern roots and corresponding line bundles; note that our convention is that \[Alpha] = -c_1(X) ! *)
 ClearAll[ Global`\[Alpha] , Global`\[Alpha] , Global`X , Global`Y  ]
 
 (* Chern roots *)
@@ -173,13 +179,48 @@ ClearAll[
 \[ScriptCapitalA] = Global`\[ScriptCapitalA]
 \[ScriptCapitalS] = Global`\[ScriptCapitalS]
 
+ClearAll [ Global`dummy ];
+ClearAll [ Global`u     ];
+ClearAll [ Global`L     ];
+
+SetAttributes[ Global`dummy , {Protected, ReadProtected} ]; 
+SetAttributes[ Global`u     , {Protected, ReadProtected} ]; 
+SetAttributes[ Global`L     , {Protected, ReadProtected} ]; 
+
+(* --------------------------------------------- *) 
+
+Clear[standardVar];
+
+standardVar[ Cohomology         ] = Global`u;
+standardVar[ EquivCohomology    ] = Global`u;
+standardVar[ KTheory            ] = Global`L;
+standardVar[ EquivKTheory       ] = Global`L;
+
+standardVar[ TrivialTheory      ] = Global`dummy;
+standardVar[ AbstractTheory     ] = Global`\[ScriptCapitalS];
+
+standardVar[ Cohomology[u_]      ] := u;
+standardVar[ EquivCohomology[u_] ] := u;
+standardVar[ KTheory[L_]         ] := L;
+standardVar[ EquivKTheory[L_]    ] := L;
+standardVar[ AbstractTheory[A_]  ] := A;
+
+Clear[theoryGlobalVars];;
+
+theoryGlobalVars [ Cohomology        ] = {};
+theoryGlobalVars [ KTheory           ] = {};
+theoryGlobalVars [ EquivCohomology   ] = {Global`\[Alpha],Global`\[Beta]};
+theoryGlobalVars [ EquivKTheory      ] = {Global`X,Global`Y};
+theoryGlobalVars [ TrivialTheory     ] = {};
+theoryGlobalVars [ AbstractTheory    ] = {};
+
 (* --------- internal free variables --------- *)
 
 (* these are used in precomputed tables *)
-SetAttributes[ H , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ L , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ U , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ C , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ SymP1`Private`H , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ SymP1`Private`L , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ SymP1`Private`U , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ SymP1`Private`C , {Protected, ReadProtected, Locked} ]; 
 
 HH = SymP1`Private`H;
 LL = SymP1`Private`L;
@@ -192,22 +233,39 @@ Clear[\[DoubleStruckCapitalP]]
 \[DoubleStruckCapitalP][n_Integer, u_] := ProjSpace[n, u]
 \[DoubleStruckCapitalP] /: \[DoubleStruckCapitalP]^ n_Integer[u_] := ProjSpace[n, u]
 
-ProjSpaceForm[ProjSpace[n_, v_]] := 
- Superscript[\[DoubleStruckCapitalP], n][v]
-ProjSpace /: Format[ProjSpace[n_, v_]] := 
- ProjSpaceForm[ProjSpace[n, v]]
+(* ProjSpaceForm[ProjSpace[n_, v_]] :=  Superscript[\[DoubleStruckCapitalP], n][v] *)
+ProjSpaceForm[ProjSpace[n_, v_]] := DisplayForm[ InterpretationBox[
+  RowBox[{SuperscriptBox[\[DoubleStruckCapitalP], n], \[LeftAngleBracket] v \[RightAngleBracket]}], 
+    ProjSpace[n, v]]]
+
+ProjSpace /: Format[ProjSpace[n_, v_]] :=  ProjSpaceForm[ProjSpace[n, v]]
 
 Dimension[ProjSpace[n_Integer, _]] := n
-Variable[ProjSpace[_Integer, v_]] := v
+Variable [ProjSpace[_Integer, v_]] := v
 
 SetAttributes[ ProjSpace , {Protected, ReadProtected, Locked} ]; 
 
 (* -------------- theory-polymorphic API ----------------------- *)
 
+normalize  [ TrivialTheory , A_ , space_             ] := A
+OmegaPF    [ TrivialTheory , A_ , space_ , d_        ] := A
+OmegaPF    [ TrivialTheory , A_ , space_ , d_ , var_ ] := A
+DeltaPF    [ TrivialTheory , A_ , space_ , vars_     ] := A
+PsiPF      [ TrivialTheory , A_ , spaces_ , var_     ] := A
+CollapsePF [ TrivialTheory , A_ , space_             ] := A
+OmegaPB    [ TrivialTheory , A_ , space_ , d_ , var_ ] := A
+DeltaPB    [ TrivialTheory , A_ , space_ , vars_     ] := A
+PsiPB      [ TrivialTheory , A_ , spaces_ , var_     ] := A
+
 normalize[ Cohomology      , A_ , space_ ] := cohomNormalize        [ A , space ]
 normalize[ KTheory         , A_ , space_ ] := ktheoryNormalize      [ A , space ]
 normalize[ EquivCohomology , A_ , space_ ] := equivCohomNormalize   [ A , space ]
 normalize[ EquivKTheory    , A_ , space_ ] := equivKTheoryNormalize [ A , space ]
+
+OmegaPF[ Cohomology      , A_ , space_ , d_ ] := cohomOmegaPF        [ A , space , d ]
+OmegaPF[ KTheory         , A_ , space_ , d_ ] := ktheoryOmegaPF      [ A , space , d ]
+OmegaPF[ EquivCohomology , A_ , space_ , d_ ] := equivCohomOmegaPF   [ A , space , d ]
+OmegaPF[ EquivKTheory    , A_ , space_ , d_ ] := equivKTheoryOmegaPF [ A , space , d ]
 
 OmegaPF[ Cohomology      , A_ , space_ , d_ , var_ ] := cohomOmegaPF        [ A , space , d , var ]
 OmegaPF[ KTheory         , A_ , space_ , d_ , var_ ] := ktheoryOmegaPF      [ A , space , d , var ]
@@ -243,6 +301,24 @@ PsiPB[ Cohomology      , A_ , spaces_ , var_ ] := cohomPsiPB        [ A , spaces
 PsiPB[ KTheory         , A_ , spaces_ , var_ ] := ktheoryPsiPB      [ A , spaces , var ]
 PsiPB[ EquivCohomology , A_ , spaces_ , var_ ] := equivCohomPsiPB   [ A , spaces , var ]
 PsiPB[ EquivKTheory    , A_ , spaces_ , var_ ] := equivKTheoryPsiPB [ A , spaces , var ]
+
+(* Psi( (\Omega^e1 x \Omega^e2 x ...) A ) *)
+OmegaVecPF[theory_, A_, spaces_, expos_, var_] := Module[
+  {m, i, B, powSpaces, omSpace},
+  If[Length[spaces] != Length[expos],
+   Print[spaces];
+   Print[expos];
+   Throw["OmegaVecPF: incompatible dimensions"], Null];
+  m = Length[spaces];
+  B = A;
+  For[i = 1, i <= m, i++,
+   B = OmegaPF[theory, B, spaces[[i]], expos[[i]], 
+      Variable[spaces[[i]]]];
+   ];
+  omSpace[ProjSpace[n_, u_], d_] := ProjSpace[n*d, u];
+  powSpaces = ZipWith[omSpace, spaces, expos];
+  PsiPF[theory, B, powSpaces, var]
+  ]
 
 (* ---------------- Relations ------------------------ *)
 
@@ -345,8 +421,7 @@ cohomPsiPB[A_, spaces_List, w_] :=
 
 (* pullback along Omega *)
 Clear[cohomOmegaPB]
-cohomOmegaPB[A_, ProjSpace[n_, u_], d_Integer] := 
- cohomOmegaPB[A, ProjSpace[n, u], d, u]
+cohomOmegaPB[A_, ProjSpace[n_, u_], d_Integer] := cohomOmegaPB[A, ProjSpace[n, u], d, u]
 cohomOmegaPB[A_, ProjSpace[n_, u_], 0, v_] := A
 cohomOmegaPB[A_, ProjSpace[n_, u_], 1, v_] := A /. {v -> u}
 cohomOmegaPB[A0_, ProjSpace[n_, u_], d_Integer, v_] := 
@@ -408,7 +483,7 @@ ktheorySinglePsiBangH[n_, m_, i_, j_] :=
     HH^(i + j + k), {k, 0, p}]]
 
 (* pushforward of L1^i*L2^j *)
-ClearAll[ktheorySinglePsiBangL]
+Clear[ktheorySinglePsiBangL]
 ktheorySinglePsiBangL[n_, m_, ii_, jj_] :=
  ktheorySinglePsiBangL[n, m, ii, jj] =
   Module[{H1, H2, A, B},
@@ -438,7 +513,7 @@ ktheoryPsiPF[A_, spaces_List, w_] := Module[
 
 ktheoryCollapsePF[A_,ProjSpace[n_,L_]] := Coefficient[Expand[A],L,0]
 
-ClearAll[ktheorySingleOmegaBangL]
+Clear[ktheorySingleOmegaBangL]
 ktheorySingleOmegaBangL[n_, d_, k_] := 
  ktheorySingleOmegaBangL[n, d, k] = Module[
    {A, B, spaces, vars, L},
@@ -461,12 +536,12 @@ ktheoryOmegaPF[A_, ProjSpace[n_, L_], d_ , Lout_] :=
 Begin["`EquivCohom`"]
 (* Print[Context[]]; *) 
 
-ClearAll[U,c]
-SetAttributes[ U , {Protected, ReadProtected, Locked} ]; 
-SetAttributes[ c , {Protected, ReadProtected, Locked} ]; 
+ClearAll[ SymP1`Private`EquivCohom`U , SymP1`Private`EquivCohom`C ]
+SetAttributes[ SymP1`Private`EquivCohom`U , {Protected, ReadProtected, Locked} ]; 
+SetAttributes[ SymP1`Private`EquivCohom`c , {Protected, ReadProtected, Locked} ]; 
 
 UU = SymP1`Private`EquivCohom`U;
-CC = SymP1`Private`EquivCohom`c;
+CC = SymP1`Private`EquivCohom`C;
 
 CC1  = Subscript[CC, 1];
 CC2  = Subscript[CC, 2];
@@ -578,7 +653,7 @@ equivCohomNormalize[A_, ps_List ] :=
 
 (* pushforward of A in P^n along Omega^d *)
 Clear[equivCohomOmegaPF];
-equivCohomOmegaPF[A_ , ProjSpace[n_, u_], d_] := equivCohomOmegaPF[A, {u, n}, d, u]
+equivCohomOmegaPF[A_ , ProjSpace[n_, u_], d_] := equivCohomOmegaPF[A, ProjSpace[n,u], d, u]
 equivCohomOmegaPF[A_ , ProjSpace[n_, u_], 0, v_] := 1;
 equivCohomOmegaPF[A_ , ProjSpace[n_, u_], 1, v_] := A /. {u -> v};
 equivCohomOmegaPF[A0_, ProjSpace[n_, u_], d_, v_] := 
@@ -639,8 +714,8 @@ Begin["`EquivK`"]
 X = Global`X;
 Y = Global`Y;
 
-ClearAll[L]
-SetAttributes[ L , {Protected, ReadProtected, Locked} ]; 
+ClearAll     [ SymP1`Private`EquivK`L ]
+SetAttributes[ SymP1`Private`EquivK`L , {Protected, ReadProtected, Locked} ]; 
 
 LL  = SymP1`Private`EquivK`L;
 LL1 = Subscript[LL, 1];
@@ -776,7 +851,7 @@ OMEGA$ND[n_, d_, p_] :=
 
 (* pushforward of A in P^n along Omega^d *)
 Clear[equivKTheoryOmegaPF];
-equivKTheoryOmegaPF[A_ , ProjSpace[n_, u_], d_    ] := equivKTheoryOmegaPF[A, {u, n}, d, u]
+equivKTheoryOmegaPF[A_ , ProjSpace[n_, u_], d_    ] := equivKTheoryOmegaPF[A, ProjSpace[n, u], d, u]
 equivKTheoryOmegaPF[A_ , ProjSpace[n_, u_], 0 , v_] := 1;
 equivKTheoryOmegaPF[A_ , ProjSpace[n_, u_], 1 , v_] := A /. {u -> v};
 equivKTheoryOmegaPF[A0_, ProjSpace[n_, u_], d_, v_] := 

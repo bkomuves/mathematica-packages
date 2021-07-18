@@ -17,7 +17,8 @@ extendListWithZeros::usage = "extendListWithZeros[L,n] add zeros to the end of L
 
 SumList::usage = "SumList[L] returns the sum of the elements of the list L"
 
-Zip::usage = "Zip[as,bs] creates a list of pairs (triples) from two (three) lists"
+Zip::usage     = "Zip[as,bs] creates a list of pairs (triples) from two (three) lists"
+ZipWith::usage = "Zip[f,as,bs] creates a list of f[a,b] applications"
 
 IsEmptyList::usage = "returns True for the empty list, False otherwise"
 IsNotEmptyList::usage = "returns False for the empty list, True otherwise"
@@ -71,13 +72,13 @@ toExportForm[X_] :=
 Fst[pair_] := pair[[1]]
 Snd[pair_] := pair[[2]]
 
-replicate[A_, n_] := Table[A, {i, 1, n}]
+replicate[A_, n_] := Module[ {i}, Table[A, {i, 1, n}] ]
 
-extendListWithZeros[L_, n_] := Join[L, Table[0, {i, 1, n - Length[L]}]]
+extendListWithZeros[L_, n_] := Join[ L , replicate[0,n - Length[L]] ]
 
 reverseSort[p_] := Sort[p, Greater]
 
-SumList[L_] := Sum[x, {x, L}]
+SumList[L_] := Module[{x},Sum[x, {x, L}]]
 
 unique[L_] := Sort[DeleteDuplicates[%]]
 
@@ -87,6 +88,8 @@ Zip[as_, bs_] := Module[{ la=Length[as] , lb=Length[bs] , n } ,
     n = Min[la,lb];
     MapThread[{#1, #2} &, {Take[as,n], Take[bs,n]}] ] ]
 
+ZipWith[f_, as_, bs_     ] := Map[ f[#[[1]], #[[2]]] &         , Zip[as, bs]     ]
+ZipWith[f_, as_, bs_, cs_] := Map[ f[#[[1]], #[[2]], #[[3]]] & , Zip[as, bs, cs] ]
 
 Zip3[as_, bs_, cs_] := Module[{ la=Length[as] , lb=Length[bs] , lc=Length[cs], n } , 
   If[la==lb && lb==lc , MapThread[{#1, #2, #3} &, {as, bs, cs}] ,
@@ -98,7 +101,7 @@ IsNotEmptyList[L_] := UnsameQ[L, {}]
 
 (* --------------- MISC ----------------- *)
 
-fallingFactorial[X_, k_] := Product[X - i, {i, 0, k - 1}]
+fallingFactorial[X_, k_] := Module[ {i} , Product[X - i, {i, 0, k - 1}] ]
 
 (* ----------------- EGF vs OGF ------------------------ *)
 
@@ -166,24 +169,24 @@ EmptyPartQ[part_] := Length[part] == 0
 Clear[DualPart];
 DualPart[{}  ] = {};
 DualPart[lam_] := 
- With[{m = lam[[1]]}, Table[Length[Select[lam, # >= i &]], {i, 1, m}]]
+ Module[{i,m = lam[[1]]}, Table[Length[Select[lam, # >= i &]], {i, 1, m}]]
 
 Clear[toExpoVec];
 toExpoVec[{}   ] = {};
 toExpoVec[part_] := 
- Module[{k = Max[part]}, 
+ Module[{j,k = Max[part]}, 
   Table[Length[Select[part, # == j &]], {j, 1, k}]]
 
 Clear[fromExpoVec];
 fromExpoVec[{} ] = {};
-fromExpoVec[es_] := 
-  Reverse[Join @@ Table[replicate[i, es[[i]]], {i, 1, Length[es]}]]
+fromExpoVec[es_] := Module[ {i},
+  Reverse[Join @@ Table[replicate[i, es[[i]]], {i, 1, Length[es]}]] ]
 
 toExpoForm[lam_] := 
   Module[{es = toExpoVec[lam], n}, n = Length[es]; Zip[Range[n], es]]
 
 partitionMonom[p_   ] := partitionMonom[p,x]
-partitionMonom[p_,x_] := Module[{fun},
+partitionMonom[p_,x_] := Module[{fun,ie},
   fun[{i_, e_}] := Subscript[x,i]^e;
   Product[fun[ie], {ie, toExpoForm[p]}]
   ]

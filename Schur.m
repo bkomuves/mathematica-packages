@@ -81,7 +81,7 @@ lookupSinE::usage = "lookupSinE[lam,e] looks up the expansion of s[lam] in eleme
 
 Begin[ "`Private`"]
 
-SetAttributes[ Global`e , {Protected, ReadProtected} ]; 
+SetAttributes[ Global`s , {Protected, ReadProtected} ]; 
 SetAttributes[ Global`e , {Protected, ReadProtected} ]; 
 SetAttributes[ Global`h , {Protected, ReadProtected} ]; 
 SetAttributes[ Global`p , {Protected, ReadProtected} ]; 
