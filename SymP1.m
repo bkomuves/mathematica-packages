@@ -353,7 +353,7 @@ cohomNormalize[A_, ps_List] :=
 
 (* pushforward of A in P^n along Omega^d *)
 Clear[cohomOmegaPF]
-cohomOmegaPF[A_, ProjSpace[n_, u_], d_] := cohomOmegaPF[A, {u, n}, d, u]
+cohomOmegaPF[A_, ProjSpace[n_, u_], d_] := cohomOmegaPF[A, ProjSpace[n, u], d, u]
 cohomOmegaPF[A_, ProjSpace[n_, u_], 0, v_] := 1
 cohomOmegaPF[A_, ProjSpace[n_, u_], 1, v_] := A /. {u -> v}
 cohomOmegaPF[A0_, ProjSpace[n_, u_], d_, v_] := 
