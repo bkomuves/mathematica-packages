@@ -218,7 +218,7 @@ classOfPn[ HirzebruchClass , ProjSpace[n_,u_] ] :=
 
 classOfPn[ UnnormHirzebruch , ProjSpace[n_,u_] ] := 
   classOfPn[ UnnormHirzebruch , ProjSpace[n,u] ] =
-    Normal[Series[ u*(1+y*Exp[-u]) / (1-Exp[-u]) , {u,0,n} ]]
+    Normal[Series[ ( u*(1+y*Exp[-u]) / (1-Exp[-u]) )^(n+1) / (1+y) , {u,0,n} ]]
 
 classOfPn[ MotivicChern , ProjSpace[n_,L_] ] := 
   classOfPn[ MotivicChern , ProjSpace[n,L] ] = 
