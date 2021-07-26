@@ -343,6 +343,12 @@ genericGhostClass[class_, ProjSpace[m_, var_]] :=
 ghostClass      [ CSM , ProjSpace[m_, u_] ] := 2*u^m + m*u^(m-1)
 umbralGhostClass[ CSM , m_ , z_ ] := 2 + m*z
 
+ghostClass      [ HirzebruchClass , ProjSpace[m_, u_] ] := (1+(-y)^m)*u^m + u^(m-1)*(1-(-y)^m)/(1+y)
+umbralGhostClass[ HirzebruchClass , m_ , z_ ] := (1+(-y)^m) + z*(1-(-y)^m)/(1+y)
+
+ghostClass      [ UnnormHirzebruch , ProjSpace[m_, u_] ] := (1+(-y)^m)*u^m + u^(m-1)*(1-(-y)^m)
+umbralGhostClass[ UnnormHirzebruch , m_ , z_ ] := (1+(-y)^m) + z*(1-(-y)^m)
+
 ghostClass      [ MotivicChern , ProjSpace[m_, L_] ] := 
   (1 + (-y)^m)*(1-L)^m + (1 - (-y)^m) * L*(1-L)^(m-1)
 umbralGhostClass[ MotivicChern , m_ , z_ ] := (1+z) + (-y)^m*(1-z)
