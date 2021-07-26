@@ -24,5 +24,7 @@ certain packages:
 
 * `Useful` - all kind of basic functions, which are missing from Mathematica
 * `Schur` - symmetric polynomials
-* `RootLoci` - computations with coincident root loci (pretty empty at the moment)
+* `SymP1` - computations in the cohomology and K-theory of Sym^n(P^1) = P^n
+* `RootLoci` - computing characteristic classes of coincident root loci 
+* `Witt` - computations in the (big) Witt ring
 
