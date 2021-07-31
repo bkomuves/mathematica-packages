@@ -27,8 +27,8 @@ pp::usage = "pp[3,2,1] - create standard power symmetric polynomials"
 
 mkSubscript::usage = "mkSubscript[var,3,2,1] - create subscripted variables. All kinds of input is accepted."
 
-lexSort::usage = "lexicographical sort of a list of lists"
-lexCompare::usage = "lexicographical comparison of lists (-1 = LT, 0 = EQ , +1 = GT)"
+lexSort     ::usage = "lexicographical sort of a list of lists"
+lexCompare  ::usage = "lexicographical comparison of lists (-1 = LT, 0 = EQ , +1 = GT)"
 lexMaximumBy::usage = "lexMaximumBy[list,fun] returns the lexicographically largest element after applying fun"
 
 JacobiTrudiE::usage = "JacobiTrudiE[lam,e] returns the Jacobi-Trudi determinant for s_lambda in elementary symm polys"
@@ -47,9 +47,9 @@ collectE::usage = "collectE[expr,e] collects the coefficients of vriables like e
 collectH::usage = "collectH[expr,e] collects the coefficients of vriables like h[3,2,2] together"
 collectP::usage = "collectP[expr,e] collects the coefficients of vriables like p[3,2,2] together"
 
-expandGeneric::usage = "expandGeneric[expr,var] expands terms like var[3,2,2] into var[3]*var[2]^2"
+expandGeneric  ::usage = "expandGeneric[expr,var] expands terms like var[3,2,2] into var[3]*var[2]^2"
 collapseGeneric::usage = "collapseGeneric[expr,var] collapes terms like var[3]*var[2]^2 into var[3,2,2]"
-collectGeneric::usage = "collectGeneric[expr,var] collects the coefficients of vriables like var[3,2,2] together"
+collectGeneric ::usage = "collectGeneric[expr,var] collects the coefficients of vriables like var[3,2,2] together"
 
 sToE::usage = "sToE[expr,s,e] converts Schur polynomials to elementary symmetric polynomials"
 eToS::usage = "eToS[expr,e,s] converts elementary symmetric polynomials to Schur polynomials"
@@ -76,6 +76,14 @@ lookupHinE::usage = "lookupHinE[lam,e] looks up the expansion of h[lam] in eleme
 
 lookupSinH::usage = "lookupSinH[lam,h] looks up the expansion of s[lam] in complete homogeneous symmetric polynomials"
 lookupSinE::usage = "lookupSinE[lam,e] looks up the expansion of s[lam] in elementary symmetric polynomials"
+
+EMatrix::usage = "EMatrix[lam,mu,n] is the matrix E_{lam/mu}(n), whose determinant appear in the expansion of total Chern class of tensor products"
+EDet   ::usage = "EDet[lam,mu,n] is the determinant E_{lam/mu}(n) which appears in the expansion of total Chern class of tensor products"
+
+(*
+extractSubscripts::usage = "debugging"
+filterSubscripts::usage  = "debugging"
+*)
 
 (* ========================================================================== *)
 
@@ -108,6 +116,14 @@ PP = Schur`Private`P
 removeZeros[L_] := Select[L, # != 0 &]
 
 constantTerm[X_, vars_] := mcoeff[X, vars, replicate[0, Length[vars]]]
+
+EMatrix[lam_, mu_, n_] := Table[
+  Binomial[
+   partitionIndex[lam, i] + n - i,
+   partitionIndex[mu , j] + n - j],
+  {i, 1, n}, {j, 1, n}]
+
+EDet[lam_, mu_, n_] := Det[EMatrix[lam, mu, n]]
 
 (* --------- lexicographic ordering -------- *)
 
@@ -170,7 +186,8 @@ mkSubscript[var_, idxs_] :=
 mkSubscript[var_, idxs__] := mkSubscript[var, {idxs}]
 
 (* extract the subscript lists of the given variable *)
-
+extractSubscripts[term_, var_, maxwidth_ , maxheight_ ] := filterSubscripts[ extractSubscripts[term,var] , maxwidth , maxheight ]
+extractSubscripts[term_, var_, maxwidth_]               := filterSubscripts[ extractSubscripts[term,var] , maxwidth ]
 extractSubscripts[term_, var_] := Module[{xs, list, vars},
   list = Cases[Variables[term], Subscript[var, xs__] -> {xs}];
   (* we have to handle the constant term too ... *)
@@ -179,6 +196,14 @@ extractSubscripts[term_, var_] := Module[{xs, list, vars},
   If[SameQ[Expand[constantTerm[term, vars]], 0], Null, 
    PrependTo[list, {}]];
   Sort[DeleteDuplicates[list]]
+  ]
+
+filterSubscripts[list_,maxwidth_]            := filterSubscripts[list,maxwidth,Infinity]
+filterSubscripts[list_,maxwidth_,maxheight_] := Module[
+  {width,height},
+  width[p_] := Length[p];
+  height[p_]:= Max@@p;     (* note: can be -Infinity! *)
+  Select[list , width[#]<=maxwidth && height[#]<=maxheight & ]
   ]
 
 (* expand terms like e_{1,1,2,3} to e_ 1^2*e_ 2*e_ 3 *)
@@ -190,13 +215,21 @@ expandGeneric[term_, e_] := Module[
   ]
 
 (* collapse terms like e_ 1^2*e_ 2*e_ 3 to e_{3,2,1,1} *)
-collapseGeneric[term_, e_] := Module[
-  {A, js, m, vars, fun},
+collapseGeneric[term_, e_]                          := collapseGeneric[term,e,Infinity,Infinity]
+collapseGeneric[term_, e_, {maxwidth_, maxheight_}] := collapseGeneric[term,e,maxwidth,maxheight]
+collapseGeneric[term_, e_, maxwidth_ ]              := collapseGeneric[term,e,maxwidth,Infinity]
+collapseGeneric[term_, e_, maxwidth_, maxheight_] := Module[
+  {A, js, m, vars, fun, width, height},
   A = Expand[expandGeneric[term, e]];
   js = Flatten[extractSubscripts[A, e]];
   m = Max @@ Append[js, 0];
   vars = Table[Subscript[e, i], {i, 1, m}];
-  fun[{c_, idxs_}] := c * mkSubscript[e, fromExpoVec[idxs]];
+  width[xs_]  := Length[xs];
+  height[xs_] := Max@@xs;
+  fun[{c_, idxs_}] := Module[{p = fromExpoVec[idxs]},
+    If[ width[p] <= maxwidth && height[p] <= maxheight
+    , c * mkSubscript[e, p]
+    , 0 ]];
   Sum[fun[cf], {cf, MCoeffs[A, vars]}]
   ]
 
@@ -210,35 +243,53 @@ expandH[term_, h_] := expandGeneric[term, h]
 expandP[term_]     := expandGeneric[term, Global`p]
 expandP[term_, p_] := expandGeneric[term, p]
 
-collapseE[term_]     := collapseGeneric[term, Global`e]
-collapseE[term_, e_] := collapseGeneric[term, e]
+collapseE[term_]               := collapseGeneric[term, Global`e]
+collapseE[term_, e_]           := collapseGeneric[term, e]
+collapseE[term_, e_, wd_]      := collapseGeneric[term, e , wd]
+collapseE[term_, e_, wd_, ht_] := collapseGeneric[term, e , wd, ht]
 
-collapseH[term_]     := collapseGeneric[term, Global`h]
-collapseH[term_, h_] := collapseGeneric[term, h]
+collapseH[term_]               := collapseGeneric[term, Global`h]
+collapseH[term_, h_]           := collapseGeneric[term, h]
+collapseH[term_, h_, wd_]      := collapseGeneric[term, h , wd]
+collapseH[term_, h_, wd_, ht_] := collapseGeneric[term, h , wd, ht]
 
-collapseP[term_]     := collapseGeneric[term, Global`p]
-collapseP[term_, p_] := collapseGeneric[term, p]
+collapseP[term_]               := collapseGeneric[term, Global`p]
+collapseP[term_, p_]           := collapseGeneric[term, p]
+collapseP[term_, p_, wd_]      := collapseGeneric[term, p , wd]
+collapseP[term_, p_, wd_, ht_] := collapseGeneric[term, p , wd, ht]
 
+(* ---------- collect ---------- *)
 
-collectGeneric[term_, e_] := Module[
-  {A = collapseGeneric[term, e], idxSet, varSet},
+collectGeneric[term_, e_ ]                  := collectGeneric[term, e , Infinity, Infinity ]
+collectGeneric[term_, e_ , {maxw_ , maxh_}] := collectGeneric[term, e , maxw , maxh        ] 
+collectGeneric[term_, e_ , maxw_ ]          := collectGeneric[term, e , maxw , Infinity   ]
+collectGeneric[term_, e_ , maxw_ , maxh_] := Module[
+  {A = collapseGeneric[term, e, maxw, maxh], idxSet, varSet},
   idxSet = extractSubscripts[A, e];
   varSet = Map[mkSubscript[e, #] &, idxSet];
   varSet = Select[varSet, UnsameQ[#, 1] &];
   Collect[A, varSet]
   ]
 
-collectS[term_]     := collectGeneric[term, Global`s]
-collectS[term_, s_] := collectGeneric[term, s]
+collectS[term_]               := collectGeneric[term, Global`s]
+collectS[term_, s_]           := collectGeneric[term, s]
+collectS[term_, s_, wd_]      := collectGeneric[term, s , wd]
+collectS[term_, s_, wd_, ht_] := collectGeneric[term, s , wd, ht]
 
-collectE[term_]     := collectGeneric[term, Global`e]
-collectE[term_, e_] := collectGeneric[term, e]
+collectE[term_]               := collectGeneric[term, Global`e]
+collectE[term_, e_]           := collectGeneric[term, e]
+collectE[term_, e_, wd_]      := collectGeneric[term, e , wd]
+collectE[term_, e_, wd_, ht_] := collectGeneric[term, e , wd, ht]
 
-collectH[term_]     := collectGeneric[term, Global`h]
-collectH[term_, h_] := collectGeneric[term, h]
+collectH[term_]               := collectGeneric[term, Global`h]
+collectH[term_, h_]           := collectGeneric[term, h]
+collectH[term_, h_, wd_]      := collectGeneric[term, h , wd]
+collectH[term_, h_, wd_, ht_] := collectGeneric[term, h , wd, ht]
 
-collectP[term_]     := collectGeneric[term, Global`p]
-collectP[term_, p_] := collectGeneric[term, p]
+collectP[term_]               := collectGeneric[term, Global`p]
+collectP[term_, p_]           := collectGeneric[term, p]
+collectp[term_, p_, wd_]      := collectGeneric[term, p , wd]
+collectp[term_, p_, wd_, ht_] := collectGeneric[term, p , wd, ht]
 
 (* ------------------ conversions ------------------- *)
 
@@ -264,23 +315,27 @@ lookupSinE[lam_] := lookupSinE[lam, Global`e]
 lookupSinE[lam_, e_] := JacobiTrudiCached[DualPart[lam]] /. {HH -> e}
 
 
-sToE[term_] := sToE[term, s, e]
-sToE[term_, s_] := sToE[term, s, e]
-sToE[term_, s_, e_] := Module[
+sToE[term_]                           := sToE[term, Global`s, Global`e]
+sToE[term_, s_Symbol]                 := sToE[term, s, Global`e]
+sToE[term_, s_Symbol,  e_Symbol]      := sToE[term, s, {e,Infinity,Infinity}]
+sToE[term_, s_Symbol, {e_Symbol,wd_}] := sToE[term, s, {e,wd,Infinity}]
+sToE[term_, s_Symbol, {e_Symbol,wd_,ht_}] := Module[
   {list = extractSubscripts[term, s], B},
   B = Expand[
     term /. Table[
       mkSubscript[s, idxs] -> JacobiTrudiE[idxs, e], {idxs, list}]];
-  collectE[B, e]]
+  collectE[B, e , wd, ht]]
 
-sToH[term_]         := sToH[term, Global`s, Global`h]
-sToH[term_, s_]     := sToH[term, s, Global`h]
-sToH[term_, s_, h_] := Module[
+sToH[term_]                            := sToH[term, Global`s, Global`h]
+sToH[term_, s_Symbol]                  := sToH[term, s, Global`h]
+sToH[term_, s_Symbol,  h_Symbol]       := sToH[term, s, {h,Infinity,Infinity}]
+sToH[term_, s_Symbol, {h_Symbol,wd_}]  := sToH[term, s, {h,wd,Infinity}]
+sToH[term_, s_Symbol, {h_Symbol,wd_,ht_}] := Module[
   {list = extractSubscripts[term, s], B},
   B = Expand[
     term /. Table[
       mkSubscript[s, idxs] -> JacobiTrudiH[idxs, h], {idxs, list}]];
-  collectH[B, h]]
+  collectH[B, h, wd, ht]]
   
 (* -------------------------------------------- *)
 
@@ -351,28 +406,32 @@ cached$HinS[lam_] := cached$HinS[lam] = Module[ {h},
 lookupEinS[lam_, s_] := cached$EinS[lam] /. {SS -> s}
 lookupHinS[lam_, s_] := cached$HinS[lam] /. {SS -> s}
 
-eToS[term_]          := eToS[term, Global`e, Global`s]
-eToS[term_, e_]      := eToS[term, e, Global`s]
-eToS[term0_, e_, s_] := Module[
+eToS[term_]                      := eToS[term, Global`e, Global`s]
+eToS[term_,  e_]                 := eToS[term, e, Global`s]
+eToS[term_,  e_, s_Symbol]       := eToS[term, e, {s,Infinity,Infinity}]
+eToS[term_,  e_, {s_ ,wd_ }]     := eToS[term, e, {s,wd,Infinity}]
+eToS[term0_, e_, {s_, wd_, ht_}] := Module[
   {list, term, B},
   term = collapseE[term0, e];
   list = extractSubscripts[term, e];
   B = Expand[
     term /. Table[
       mkSubscript[e, idxs] -> lookupEinS[idxs, s], {idxs, list}]];
-  collectS[B, s]
+  collectS[B, s, wd, ht]
   ]
 
-hToS[term_]          := hToS[term, Global`h, Global`s]
-hToS[term_, h_]      := hToS[term, h, Global`s]
-hToS[term0_, h_, s_] := Module[
+hToS[term_]                       := hToS[term, Global`h, Global`s]
+hToS[term_,  h_]                  := hToS[term, h, Global`s]
+hToS[term_,  h_, s_Symbol]        := hToS[term, h, {s,Infinity,Infinity}]
+hToS[term_,  h_, {s_ ,wd_ }]      := hToS[term, h, {s,wd,Infinity}]
+hToS[term0_, h_, {s_, wd_, ht_}]  := Module[
   {list, term, B},
   term = collapseH[term0, h];
   list = extractSubscripts[term, h];
   B = Expand[
     term /. Table[
       mkSubscript[h, idxs] -> lookupHinS[idxs, s], {idxs, list}]];
-  collectS[B, s]
+  collectS[B, s, wd, ht]
   ]
 
 (* --------------------------------------- *)
@@ -390,28 +449,32 @@ cached$HinE[lam_] :=
 lookupEinH[lam_, h_] := cached$EinH[lam] /. {HH -> h}
 lookupHinE[lam_, e_] := cached$HinE[lam] /. {EE -> e}
 
-eToH[term_]          := eToH[term, Global`e, Global`h]
-eToH[term_, e_]      := eToH[term, e, Global`h]
-eToH[term0_, e_, h_] := Module[
+eToH[term_]                     := eToH[term, Global`e, Global`h]
+eToH[term_,  e_]                := eToH[term, e, Global`h]
+eToH[term_,  e_, h_Symbol]      := eToH[term, e, {h,Infinity,Infinity} ]
+eToH[term_,  e_, {h_,wd_}]      := eToH[term, e, {h,wd      ,Infinity} ]
+eToH[term0_, e_, {h_,wd_,ht_}]  := Module[
   {list, term, B},
   term = collapseE[term0, e];
   list = extractSubscripts[term, e];
   B = Expand[
     term /. Table[
       mkSubscript[e, idxs] -> lookupEinH[idxs, h], {idxs, list}]];
-  collectH[B, h]
+  collectH[B, h, wd, ht]
   ]
 
-hToE[term_]          := hToE[term, Global`h, Global`e]
-hToE[term_, h_]      := hToE[term, h, Global`e]
-hToE[term0_, h_, e_] := Module[
+hToE[term_]                  := hToE[term, Global`h, Global`e]
+hToE[term_,  h_]             := hToE[term, h, Global`e]
+hToE[term_,  h_, e_Symbol]   := hToE[term, h, {e, Infinity, Infinity}]
+hToE[term_,  h_, {e_,wd_} ]  := hToE[term, h, {e, wd      , Infinity}]
+hToE[term0_, h_, {e_,wd_,ht_}] := Module[
   {list, term, B},
   term = collapseH[term0, h];
   list = extractSubscripts[term, h];
   B = Expand[
     term /. 
      Table[mkSubscript[h, idxs] -> lookupHinE[idxs, e], {idxs, list}]];
-  collectE[B, e]
+  collectE[B, e , wd, ht]
   ]
 
 (* ------------------------------------ *)
@@ -448,22 +511,29 @@ hToX[term_, h_, x_, n_] := Module[
 
 xToE[term_, {x_, n_}, e_] := xToE[term, x, n, e]
 xToE[term_, x_, n_, e_] := Module[
-  {pair},
+  {pair,A},
   pair = SymmetricReduction[term,
     Table[Subscript[x, i], {i, 1, n}],
     Table[Subscript[e, i], {i, 1, n}]];
   If[SameQ[Snd[pair], 0], Null, 
    Throw["xToE: polynomial is not symmetric"]];
-  collectE[Expand[Fst[pair]], e]
+  A=collectE[Expand[Fst[pair]], e , {Infinity, n}];
+  A
   ]
 
+(* this behaves really strangely ???
 xToH[term_, {x_, n_}, h_] := xToH[term, x, n, h]
-xToH[term_, x_, n_, h_] := Module[ {e} ,
+xToH[term_,  x_, n_ , h_] := Module[ {e} ,
  eToH[ xToE[term, {x, n}, e], e, h] ]
+*)
+
+xToH[term_, {x_, n_}, h_] := xToH[term, x, n, h]
+xToH[term_,  x_, n_ , h_] := Module[ {e} ,
+ sToH[ xToS[term, {x, n}, e], e, {h,n}] ]
 
 xToS[term_, {x_, n_}, s_] := xToS[term, x, n, s]
-xToS[term_, x_, n_, s_] := Module[ {e},
- eToS[ xToE[term, {x, n}, e], e, s] ]
+xToS[term_,  x_, n_ , s_] := Module[ {e},
+ eToS[ xToE[term, {x, n}, e], e, {s,n}] ]
 
 
 (* ----------------------------------------------- *)
