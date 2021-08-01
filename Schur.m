@@ -26,6 +26,7 @@ hh::usage = "hh[3,2,1] - create standard homogeneous symmetric polynomials"
 pp::usage = "pp[3,2,1] - create standard power symmetric polynomials"
 
 mkSubscript::usage = "mkSubscript[var,3,2,1] - create subscripted variables. All kinds of input is accepted."
+mkSchur    ::usage = "mkSchur[var,{3,2,1}] is like mkSubscript, but takes an arbitrary integer sequence, and normalizes the resulting Schur polynomial (with a sign or zero)"
 
 lexSort     ::usage = "lexicographical sort of a list of lists"
 lexCompare  ::usage = "lexicographical comparison of lists (-1 = LT, 0 = EQ , +1 = GT)"
@@ -49,7 +50,9 @@ collectP::usage = "collectP[expr,e] collects the coefficients of vriables like p
 
 expandGeneric  ::usage = "expandGeneric[expr,var] expands terms like var[3,2,2] into var[3]*var[2]^2"
 collapseGeneric::usage = "collapseGeneric[expr,var] collapes terms like var[3]*var[2]^2 into var[3,2,2]"
-collectGeneric ::usage = "collectGeneric[expr,var] collects the coefficients of vriables like var[3,2,2] together"
+collectGeneric ::usage = "collectGeneric[expr,var] collects the coefficients of variables like var[3,2,2] together"
+coeffsGeneric  ::usage = "coeffsGeneric[expr,var] returns the list of {idxs,coefficient} pairs where idxs means var[idxs]"
+coeffsGenericBi::usage = "coeffsGenericBi[expr,var1,var2] returns the list of {idxs1,idxs2,coefficient} triple"
 
 sToE::usage = "sToE[expr,s,e] converts Schur polynomials to elementary symmetric polynomials"
 eToS::usage = "eToS[expr,e,s] converts elementary symmetric polynomials to Schur polynomials"
@@ -79,6 +82,8 @@ lookupSinE::usage = "lookupSinE[lam,e] looks up the expansion of s[lam] in eleme
 
 EMatrix::usage = "EMatrix[lam,mu,n] is the matrix E_{lam/mu}(n), whose determinant appear in the expansion of total Chern class of tensor products"
 EDet   ::usage = "EDet[lam,mu,n] is the determinant E_{lam/mu}(n) which appears in the expansion of total Chern class of tensor products"
+
+schurWeylCharacter::usage = "schurWeylCharacter[lam,{x,n}] implements the Weyl character formula for Schur polynomials"
 
 (*
 extractSubscripts::usage = "debugging"
@@ -110,6 +115,72 @@ SS = Schur`Private`S
 EE = Schur`Private`E
 HH = Schur`Private`H
 PP = Schur`Private`P
+
+
+(* accept all three forms *)
+Clear[mkSubscript]
+mkSubscript[var_, {}   ]  := 1   (* hackety hack *)
+mkSubscript[var_, idxs_]  := If[ListQ[idxs], Subscript @@ Prepend[idxs, var], Subscript[var, idxs]]
+mkSubscript[var_, idxs__] := mkSubscript[var, {idxs}]
+
+(* --------------- Schur stufff------------------- *)
+
+Clear[mkSchur]
+mkSchur[var_, {}   ]  := 1   (* hackety hack *)
+mkSchur[var_, idxs_]  := If[ListQ[idxs], mkSchurCF[var,idxs] , mkSchurCF[var,{idxs}] ]
+mkSchur[var_, idxs__] := mkSchurCF[var, {idxs}]
+
+(* like mkSubscript, but normalizes to a signed Schur polynomial (or zero) *)
+mkSchurCF[ps_List] := mkSchurCF[Global`s, ps, 1]
+mkSchurCF[s_, ps_] := mkSchurCF[s, ps, 1]
+mkSchurCF[s_, ps0_, cf0_] := Module[
+  {ps = ps0, cf = cf0, n = Length[ps0], ok, i, a, b},
+  ps = ps0;
+  ok = True;
+  For[i = 1, i <= n, i++,
+   a = partitionIndex[ps, i];
+   b = partitionIndex[ps, i + 1];
+   If[a == b - 1, Return[0]];
+   If[a < b - 1,
+    ok = False;
+    cf = -cf;
+    ps = ReplacePart[ps, {i -> b - 1, i + 1 -> a + 1}]];
+   ];
+  If[ok, 
+   cf*mkSubscript[s, removeZeros[ps]],
+   mkSchurCF[s, ps, cf]
+   ]
+  ]
+
+(* the Weyl character formula for Schur polynomials *)
+schurWeylCharacter[part_List, x_Symbol] := schurWeylCharacter[part, {x, Length[part]}]
+schurWeylCharacter[part_List, {x_Symbol, n_Integer}] := Module[
+  {A, V, M},
+  M = Table[ 
+    Subscript[x, j]^(partitionIndex[part, i] + n - i) , {i, 1, n}, {j,
+      1, n}];
+  A = Det[M];
+  V = Product[
+    Product[Subscript[x, i] - Subscript[x, j], {j, i + 1, n}], {i, 1, 
+     n - 1}];
+  Expand[Factor[A/V]]
+  ]
+
+(* for ex.: Map[schurNormalizationSanityCheck, Combinatorica`Compositions[7, 4]] *)
+schurNormalizationSanityCheck[p_] := schurNormalizationSanityCheck[p,False]
+schurNormalizationSanityCheck[p_,debug_] := Module[
+  {n = Length[p] + 1, lhs, rhs, tmp, x, s},
+  x = Global`x;
+  s = Global`s;
+  lhs = schurWeylCharacter[p, {x, n}];
+  tmp = mkSchur[s, p];
+  rhs = sToX[tmp, s, {x, n}];
+  If[debug,
+    Print[lhs];
+    Print[rhs];
+  ];
+  Expand[lhs - rhs]
+  ]
 
 (* --------------- misc ------------------- *)
 
@@ -177,13 +248,6 @@ lexMaximumBy[list_, fun_] := Module[
 
 (* -------------------------------------------------------------------------- *)
 
-(* accept all three forms *)
-Clear[mkSubscript]
-mkSubscript[var_, {}] := 1   (* hackety hack *)
-
-mkSubscript[var_, idxs_] := 
- If[ListQ[idxs], Subscript @@ Prepend[idxs, var], Subscript[var, idxs]]
-mkSubscript[var_, idxs__] := mkSubscript[var, {idxs}]
 
 (* extract the subscript lists of the given variable *)
 extractSubscripts[term_, var_, maxwidth_ , maxheight_ ] := filterSubscripts[ extractSubscripts[term,var] , maxwidth , maxheight ]
@@ -257,6 +321,31 @@ collapseP[term_]               := collapseGeneric[term, Global`p]
 collapseP[term_, p_]           := collapseGeneric[term, p]
 collapseP[term_, p_, wd_]      := collapseGeneric[term, p , wd]
 collapseP[term_, p_, wd_, ht_] := collapseGeneric[term, p , wd, ht]
+
+(* ---------- coeffs ----------- *)
+
+coeffsGeneric[term_, e_ ]                  := coeffsGeneric[term, e , Infinity, Infinity ]
+coeffsGeneric[term_, e_ , {maxw_ , maxh_}] := coeffsGeneric[term, e , maxw , maxh        ] 
+coeffsGeneric[term_, e_ , maxw_ ]          := coeffsGeneric[term, e , maxw , Infinity   ]
+coeffsGeneric[term_, e_ , maxw_ , maxh_] := Module[
+  {A = collapseGeneric[term, e, maxw, maxh], idxSet, varSet, L, kst},
+  idxSet = extractSubscripts[A, e];
+  idxSet1 = Select[ idxSet, IsNotEmptyList[#]& ];
+  varSet = Map[mkSubscript[e, #] &, idxSet1];
+  L = Table[ {idx,Coefficient[A,mkSubscript[e,idx]]} , {idx,idxSet1} ];
+  kst = Expand[constantTerm[term, varSet]];
+  If[SameQ[kst, 0], L, PrependTo[L, {{},kst}]]
+  ]
+
+(* like coeffsGeneric but for 2 variables *)
+coeffsGenericBi[expr_, sr_, sq_] := Module[
+  {f, A, B},
+  A = coeffsGeneric[expr, sr];
+  f[{ridx_, cf_}] := 
+   Table[{ridx, pair[[1]], pair[[2]]}, {pair, 
+     coeffsGeneric[cf, sq]}];
+  Flatten[Map[f, A], 1]
+  ]
 
 (* ---------- collect ---------- *)
 
