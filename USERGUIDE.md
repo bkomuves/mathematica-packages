@@ -9,16 +9,121 @@ Table of content:
 
 * `Useful` - all kind of basic functions, which are missing from Mathematica
 * `Partitions` - functions related to (integer) partitions
-* `Schur` - symmetric polynomials
-* `SymP1` - computations in the cohomology and K-theory of Sym^n(P^1) = P^n
+* `Schur` - working with symmetric polynomials
+* `SymP1` - computations in the cohomology and K-theory of Sym<sup>n</sup>&Popf;<sup>1</sup> = &Popf;<sup>n</sup>
 * `RootLoci` - computing characteristic classes of coincident root loci 
 
 
 Package `Useful`
 ================
 
-TODO
+Assorted useful functions.
 
+### Lists and tuples
+
+    SumList[L]
+    MaxList[L]
+
+Returns the sum (resp. maximum) of the elements of the list `L`. Note: the 
+maximum will return minus infinity for the empty list
+
+    Fst[{x,y}] 
+    Snd[{x,y}] 
+    
+Returns the first and second element of a pair (or list), respectively.
+
+    replicate[A,n] 
+
+Replicates `A`, resulting a list `{A,A,...,A}` of length `n`.
+
+    Zip[as,bs]
+    Zip[as,bs,cs]
+
+Create a list of pairs (or triples) from two (or three) lists.
+
+    ZipWith[f,as,bs]
+    ZipWith[f,as,bs,cs]
+
+Creates a new list by applying the function `f` to the pairs or triples made from
+the lists `as` and `bs` (and `cs`). For example:
+
+    ZipWith[Plus, {100, 200, 300}, {4, 5, 6}] == {104, 205, 306}
+    
+The functions
+
+    IsEmptyList[L]
+    IsNotEmptyList[L]
+
+returns `True` (resp. `False`) if `L` is empty, and `False` (reps. `True`) otherwise.
+TODO: maybe rename these so that they conform to the Mathematica convention of 
+ending with `Q`?
+ 
+    reverseSort[L]
+
+is equivalent to `Reverse[Sort[L]]`
+
+    unique[L]
+
+Sorts and removes the duplicates from a list (making it usable as a representation of a set).
+
+    extendListWithZeros[L,n] 
+
+Add zeros to the end of the list `L` till it reaches length `n`.
+
+### Coefficient extraction
+
+    mcoeff[A,{x1,x2,x3},{e1,e2,e3}] 
+
+extracts the coefficient of `x1^e1*x2^e2*x3^e3` in `A`.
+
+    MCoeffs[A,{x1,x2,x3}] 
+
+Returns a list of `{coeff,expovec}` pairs, representing all the monomials in the
+variables `{x1,x2,x3}`
+
+### Equation solving
+
+    mySolveAlways[lhs,rhs,{p1,p2,..}] 
+    mySolveAlways[lhs,rhs,{p1,p2,..},{a1,a2,..}] 
+
+tries to solve `lhs==rhs` where `p1,p2,...` are parameters and `a1,a2,...` are unknowns.
+This is similar to the built-in function `SolveAlways`, but works with more than
+one parameter.
+
+### Generating functions    
+    
+    fallingFactorial[x,k] 
+
+Computes the falling factorial `x*(x-1)*(x-2)*...*(x-k+1)`.
+    
+    ogf2egf[F,x,t]
+    egf2ogf[G,t,x] 
+
+Converts between an ordinary generating function F(x) and an exponential generating
+function G(t), using Laplace transformation. For example:
+
+    ogf2egf[ 1 / (1-a*x) , x , t ] == Exp[ a*t ]
+    egf2ogf[ Exp[a*t]    , t , x ] == 1 / (1-a*x)
+
+Of course this does not always work.
+
+### Permutations
+
+    SortingPermutation[L]
+    ReverseSortingPermutation[L]
+
+Given a list `L` of length `n`, these functions returns a permutation of `{1,2,...,n}`, which,
+applied to the list `L` result in that list sorted in ascending (resp. descending) order.
+
+Note: this permutation is not unique if the list contains repeated elements.
+
+### Misc
+
+    toExportForm[expr]
+
+Converts an expression to "export form". This is useful when you want to export
+the results of calculations into text files.
+    
 
 Package `Partitions`
 ====================
@@ -380,7 +485,7 @@ The essence of this package is a set of functions computing pushforward and pull
 
 WARNING: These function assume that the class you pass them is already normalized,
 that is, it only contains powers 0..n of the generator. If this is not the case,
-you have to use the `normalzize` function above! 
+you have to use the `normalize` function above! 
 
 TODO: maybe do this automatically.
 

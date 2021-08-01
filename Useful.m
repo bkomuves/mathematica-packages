@@ -16,10 +16,10 @@ replicate::usage = "replicate[A,n] replicates A into a list, n times"
 extendListWithZeros::usage = "extendListWithZeros[L,n] add zeros to the end of L till it reaches length n"
 
 SumList::usage = "SumList[L] returns the sum of the elements of the list L"
-MaxList::usage = "SumList[L] returns the maximum of the elements of the list L (for empty list, minus infinity)"
+MaxList::usage = "MaxList[L] returns the maximum of the elements of the list L (for empty list, minus infinity)"
 
 Zip::usage     = "Zip[as,bs] creates a list of pairs (triples) from two (three) lists"
-ZipWith::usage = "Zip[f,as,bs] creates a list of f[a,b] applications"
+ZipWith::usage = "ZipWith[f,as,bs] creates a list of f[a,b] applications"
 
 IsEmptyList::usage = "returns True for the empty list, False otherwise"
 IsNotEmptyList::usage = "returns False for the empty list, True otherwise"
