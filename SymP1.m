@@ -83,7 +83,7 @@ SetAttributes[ EquivCohomology , {Protected, ReadProtected, Locked} ];
 SetAttributes[ EquivKTheory    , {Protected, ReadProtected, Locked} ]; 
 SetAttributes[ AbstractTheory  , {Protected, ReadProtected, Locked} ]; 
 
-standardVar      ::usage = "standardVar[theory] returns the standard generator name for that theory"
+theoryStandardVar::usage = "theoryStandardVar[theory] returns the standard generator name for that theory"
 theoryGlobalVars ::usage = "theoryGlobalVars[theory] returns the set of global names associated with that theory (this is relevant for the equivariant theories)"
 
 (* ------------- theory-polymorphic API ------------ *)
@@ -190,21 +190,21 @@ SetAttributes[ Global`L     , {Protected, ReadProtected} ];
 
 (* --------------------------------------------- *) 
 
-Clear[standardVar];
+Clear[theoryStandardVar];
 
-standardVar[ Cohomology         ] = Global`u;
-standardVar[ EquivCohomology    ] = Global`u;
-standardVar[ KTheory            ] = Global`L;
-standardVar[ EquivKTheory       ] = Global`L;
+theoryStandardVar[ Cohomology         ] = Global`u;
+theoryStandardVar[ EquivCohomology    ] = Global`u;
+theoryStandardVar[ KTheory            ] = Global`L;
+theoryStandardVar[ EquivKTheory       ] = Global`L;
 
-standardVar[ TrivialTheory      ] = Global`dummy;
-standardVar[ AbstractTheory     ] = Global`\[ScriptCapitalS];
+theoryStandardVar[ TrivialTheory      ] = Global`dummy;
+theoryStandardVar[ AbstractTheory     ] = Global`\[ScriptCapitalS];
 
-standardVar[ Cohomology[u_]      ] := u;
-standardVar[ EquivCohomology[u_] ] := u;
-standardVar[ KTheory[L_]         ] := L;
-standardVar[ EquivKTheory[L_]    ] := L;
-standardVar[ AbstractTheory[A_]  ] := A;
+theoryStandardVar[ Cohomology[u_]      ] := u;
+theoryStandardVar[ EquivCohomology[u_] ] := u;
+theoryStandardVar[ KTheory[L_]         ] := L;
+theoryStandardVar[ EquivKTheory[L_]    ] := L;
+theoryStandardVar[ AbstractTheory[A_]  ] := A;
 
 Clear[theoryGlobalVars];;
 

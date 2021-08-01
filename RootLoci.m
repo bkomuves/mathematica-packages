@@ -414,9 +414,11 @@ GG[i_] := Subscript[g, i];
 GGs[n_] := Table[g[i], {i, 1, n}]
 
 (* class of the root loci X_lambda, computed using the recursive algorithm *)
+recClassOfRootLoci[class_, lambda_      ] := recClassOfRootLoci[class, lambda, theoryStandardVar[Theory[class]] ]
 recClassOfRootLoci[class_, lambda_, var_] := classOfXLam[class, lambda] /. {G -> var}
 
 (* class of the distinct loci D(n1,n2...,nr), computed using the recursive algorithm *)
+recClassOfDistinctLoci[class_, ns_            ] := recClassOfDistinctLoci[class, ns, theoryStandardVar[Theory[class]] ] 
 recClassOfDistinctLoci[class_, n_Integer, var_] := classOfDisj1[class, n] /. {G -> var}
 recClassOfDistinctLoci[class_, ns_List  , var_] := classOfDisj[class, ns] /. 
   Table[GG[i] -> Subscript[var, i], {i, 1, Length[ns]}]
@@ -530,7 +532,7 @@ classOfDisjSorted[class_, pns_] := classOfDisjSorted[class, pns ] =
 
 
 (* export the classes of X(lambda) for |lambda|<=n *)
-ExportRootLoci[class_, fname_, n_] := ExportRootLoci[class, fname, n, standardVar[Theory[class]]]
+ExportRootLoci[class_, fname_, n_] := ExportRootLoci[class, fname, n, theoryStandardVar[Theory[class]]]
 ExportRootLoci[class_, fname_, n_, var_] := 
  Module[{h, i, p, parts, k, m, s, j, A, name, theory},
   theory = Theory[class];
