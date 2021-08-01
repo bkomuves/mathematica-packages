@@ -47,6 +47,7 @@ Expand[C1 - C2]
 Clear["SymP1`*"];
 BeginPackage[ "SymP1`"]
 Needs["Useful`"]
+Needs["Partitions`"]
 
 (* ---------------- SUPPORTED COHOMOLOGY THEORIES ---------------------- *)
 

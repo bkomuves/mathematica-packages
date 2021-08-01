@@ -19,6 +19,7 @@ sToH[%, s, h]
 Clear["Schur`*"];
 BeginPackage["Schur`"]
 Needs["Useful`"]
+Needs["Partitions`"]
 
 ss::usage = "ss[3,2,1] - create standard Schur polynomials"
 ee::usage = "ee[3,2,1] - create standard elementary symmetric polynomials"

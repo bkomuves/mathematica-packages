@@ -14,6 +14,7 @@ Clear["RootLoci`*"];
 BeginPackage[ "RootLoci`"]
 Needs["Combinatorica`"]
 Needs["Useful`"]
+Needs["Partitions`"]
 Needs["SymP1`"]
 Needs["Witt`"]
 
