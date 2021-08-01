@@ -17,6 +17,8 @@ Table of content:
 Package `Useful`
 ================
 
+TODO
+
 
 Package `Partitions`
 ====================
@@ -440,3 +442,148 @@ But it's recommended that you use the generic versions.
 
 Package `RootLoci`
 ==================
+
+The goal of this package is to compute characteristic classes of _coincident root loci_.
+These are locally closed subvarieties X<sub>&lambda;</sub> &subset; &Popf;<sup>n</sup>,
+indexed by partitions &lambda; of n.
+
+### Available classes and invariants
+
+WARNING: not everything is implemented yet!
+
+Invariants:
+
+    EulerChar     
+    ToddGenus     
+    ChiY          
+    PoincarePoly  
+    HodgeDeligneE 
+    NumberOfPoints
+    HasseZeta     
+
+Characteristic classes:
+
+    FundClass             
+    CSM                   
+    ToddClass             
+    HirzebruchClass       
+    UnnormHirzebruch      
+    MotivicChern          
+    EquivFundClass        
+    EquivCSM              
+    EquivMotivicChern     
+
+Some functions operating on classes:
+
+    Theory[class] 
+
+gives back the theory the given class lives in. For example `Theory[MotivicChern] == KTheory`.
+
+    shortName[class] 
+
+gives back a short string, which can be used as name for example when generating 
+tables of these invariants.
+
+### Umbral bases
+
+The "umbral basis" associated to a cohomology theory is a basis in the (generalized)
+cohomology ring of &Popf;<sup>n</sup> in which the pushforwards &Psi;<sub>!</sub> are
+trivial to compute. This is very useful because it maps the big ring where the multiplication
+is induced by &Psi;<sub>!</sub> on the sum (for all) of the cohomology rings of &Popf;<sup>n</sup>
+into a normal power series ring in which we can compute as usual.
+
+    umbralBasis[theory,ProjSpace[n,g],k] 
+
+returns the k-th umbral basis element in &Popf;<sup>n</sup> (k should be between 0 and n).
+
+    toUmbralBasis[theory,A,ProjSpace[n,g],z] 
+
+converts from the usual (generalized) cohomology class representation to the umbral basis,
+where the umbral variable z<sup>k</sup> corresponds to the k-th umbral basis.
+
+    fromUmbralBasis[theory,A,z,ProjSpace[n,g]] 
+
+converts back from the umbral basis to the usual representation.
+
+### Various classes 
+
+    classOfPn[class,ProjSpace[n,g]] 
+
+The class of Sym<sup>n</sup>&Popf;<sup>1</sup> = &Popf;<sup>n</sup>
+
+    ghostClass[class,ProjSpace[m,g]] 
+
+This returns the m-th ghost class (computed via hardcoded formulas). These are
+the coefficients of the logarithmic differential of the "relative zeta" (or exponential),
+that is, the power series whose coefficients are the symmetric products.
+
+    abstractGhostClass[m,S] 
+
+Returns the m-th "abstract" ghost class in terms of the variables S<sub>n</sub> which
+corresponds to the (class of) Sym<sup>n</sup>X.
+
+    genericGhostClass[class,space] 
+
+Returns the m-th ghost class computed using pushforwards from the classes 
+of &Popf;<sup>n</sup> using the "abstract ghost class" above. This should give
+the same result as `ghostClass` above.
+
+    umbralGhostClass[class,m,z] 
+
+Returns the m-th ghost class in the "umbral z-coordinates" (via hardcoded formulas)
+
+### The &Lscr; and &Pscr; power series 
+
+    LSeries[n]
+    PSeries[n]
+
+The &Lscr; and &Pscr; power series up to degree n.
+
+    LSeries[n,d]
+    PSeries[n,d]
+
+The same but after the substitution x<sub>i</sub> x&map; (x<sub>i</sub>)<sup>d</sup>.
+
+    LPoly[k]
+    PPoly[k]
+
+The degree k part (weighted homogeneous polynomial) of the above. Note: deg(x<sub>i</sub>)=i !
+
+    LPoly[k,d]
+    PPoly[k,d]
+
+The same but after the substitution x<sub>i</sub> x&map; (x<sub>i</sub>)<sup>d</sup>.
+
+### Classes and invariants of coincident root loci
+
+These functions compute the classes using the recursive algorithm.
+
+    recClassOfRootLoci[class, lambda, gen] 
+
+computes the class of X<sub>&lambda;</sub> &subset; &Popf;<sup>n</sup>.
+
+    recClassOfDistinctLoci[class, nvec, gen] 
+
+computes the class of 
+D(n1,n2,...,nk) &subset; &Popf;<sup>n1</sup> &times; &Popf;<sup>n2</sup> &times; ...  &times; &Popf;<sup>nk</sup>
+which is the set of n1+n2+...+nk points which are all distinct from each other.
+
+    ExportRootLoci[class, fname, n      ] 
+    ExportRootLoci[class, fname, n ,var ]
+
+exports the classes of coincident root loci (up to partitions of weight at most n) 
+into a text file.
+
+### Closure of the strata
+
+The coincident root loci X<sub>&lambda;</sub> stratifies &Popf;<sup>n</sup>, and
+the closure of a stratum is the union of it and other strata. On the level of
+partitions, this corresponds to merging some parts into one.
+
+    PartitionClosure[lambda] 
+    PartitionClosure$v1[lambda]
+
+both returns the set of coarsenings of the partition `lambda`, which corresponds to
+the stratification of the closure of the strata X<sub>&lambda;</sub>. These are 
+two different implementations, which should give the same but the `$v1` is slower.
+
