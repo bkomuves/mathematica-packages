@@ -92,14 +92,14 @@ relation  ::usage = "For example relation[EquivKTheory,ProjSpace[n,L]] returns t
 normalize ::usage = "normalize[theory,A,space(s)] normalizes the class in the (product of) the given spaces"
 
 CollapsePF ::usage = "CollapsePF[theory,A,space] is the pushforward of A along the collapsing map pt:\*SuperscriptBox[\[DoubleStruckCapitalP],n] ->pt"
-PsiPF      ::usage = "PsiPF[theory,A,spaces,var] is the pushforward of A along the merging map \[CapitalPsi] in cohomology"
-DeltaPF    ::usage = "DeltaPF[theory,A,space,vars] is the pushforward of A along the diagonal map \*SuperscriptBox[\[CapitalDelta],d] in cohomology"
-OmegaPF    ::usage = "OmegaPF[theory,A,space,d,var] is the pushforward of A along the replicating map \*SuperscriptBox[\[CapitalOmega],d] in cohomology"
-OmegaVecPF ::usage = "OmegaVecPF[theory,A,space,ds,var] is the pushforward along the (\[CapitalPsi] \[SmallCircle] (\*SuperscriptBox[\[CapitalOmega],d1] \[Times] \*SuperscriptBox[\[CapitalOmega],d2] \[Times] ... )) in cohomology"
+PsiPF      ::usage = "PsiPF[theory,A,spaces,var] is the pushforward of A along the merging map \[CapitalPsi]"
+DeltaPF    ::usage = "DeltaPF[theory,A,space,vars] is the pushforward of A along the diagonal map \*SuperscriptBox[\[CapitalDelta],d]"
+OmegaPF    ::usage = "OmegaPF[theory,A,space,d,var] is the pushforward of A along the replicating map \*SuperscriptBox[\[CapitalOmega],d]"
+OmegaVecPF ::usage = "OmegaVecPF[theory,A,space,ds,var] is the pushforward along the (\[CapitalPsi] \[SmallCircle] (\*SuperscriptBox[\[CapitalOmega],d1] \[Times] \*SuperscriptBox[\[CapitalOmega],d2] \[Times] ... ))"
 
-OmegaPB   ::usage = "cohomOmegaPB[theory,A,space,d,var] is the pullback of A along the replicating map \*SuperscriptBox[\[CapitalOmega],d] in cohomology"
-DeltaPB   ::usage = "cohomDeltaPB[theory,A,space,vars] the pullback of A along the diagonal map \*SuperscriptBox[\[CapitalDelta],d] in cohomology"
-PsiPB     ::usage = "cohomPsiPB[theory,A,spaces,var] is the pullback along the merging map \[CapitalPsi] in cohomology"
+OmegaPB   ::usage = "OmegaPB[theory,A,space,d,var] is the pullback of A along the replicating map \*SuperscriptBox[\[CapitalOmega],d]"
+DeltaPB   ::usage = "DeltaPB[theory,A,space,vars] the pullback of A along the diagonal map \*SuperscriptBox[\[CapitalDelta],d]"
+PsiPB     ::usage = "PsiPB[theory,A,spaces,var] is the pullback along the merging map \[CapitalPsi]"
 
 (* ----- cohomology (non-equivariant) ----- *)
 

@@ -303,6 +303,140 @@ Returns the lexicographically largest element after applying fun.
 Package `SymP1`
 ===============
 
+This package implements computations in the cohomology and K-theory of symmetric products 
+Sym<sup>n</sup>&Popf;<sup>1</sup> = &Popf;<sup>n</sup> of
+the complex projective line &Popf;<sup>1</sup>.
+
+The projective space &Popf;<sup>n</sup> with the generator of the cohomology theory is denoted by
+
+    ProjSpace[n,g]
+
+where `n` is the dimension and `g` is the generator. In case of the K-theory the
+generator is the class [L] of the tautological line bundle L&rarr;&Popf;<sup>n</sup>; and in case of cohomology
+it's _minus 1 times_ the first Chern class of L: u=-c<sub>1</sub>(L). You can also use the syntax
+<tt>&Popf;[n,g]</tt> in Mathematica.
+
+The functions
+
+    Dimension[space]
+    Variable[space]
+
+return the dimension and the generator of a projective space `ProjSpace[n,u]`.
+
+### Available cohomology theories
+
+The following theories are supported:
+
+    TrivialTheory
+    Cohomology
+    KTheory
+    EquivCohomology
+    EquivKTheory   
+
+The "trivial theory" associates the same ring to any space. The equivariant version 
+mean T<sup>2</sup> or GL<sub>2</sub> -equivariant cohomology or K-theory, and the
+convention is that weigths of the T<sup>2</sup>-representation are denoted by 
+&alpha;,&beta; with the corresponding representations (line bundles) are
+X<sup>-1</sup> being Y<sup>-1</sup> (note the signs!). So c<sub>1</sub>(X) = -&alpha;.
+In the GL<sub>2</sub> case the Chern classes are then c<sub>1</sub>=&alpha;+&beta;
+and c<sub>2</sub>=&alpha;&beta;.
+
+Because Mathematica is very dynamically typed, we represent elements of these
+rings simply by polynomials; and variables which are not the generator (nor
+the equivariant generators) are considered part of the coefficient ring.
+
+    theoryStandardVar[theory] 
+    theoryGlobalVars[theory] 
+
+`theoryStandardVar` returns the standard generator name for that theory (which is `u` for cohomology and `L` for K-theory;
+while `theoryGlobalVars` returns the set of global names associated with that theory
+(this is relevant for the equivariant theories, where it returns {&alpha;,&beta;} resp. {X,Y}).
+Note: These symbols are reserved for this use in the global namespace.
+
+The function
+
+    relation[theory,space]  
+
+returns the relation in the cohomology / K-theory ring of the given projective space, while
+
+    normalize[theory,A,space] 
+
+normalizes a class A using the relation, such that only powers 0..n of the generator appear in the results.
+
+### The three maps
+
+There are four important maps between these spaces:
+
+* the diagonal map &Delta;<sup>d</sup> : &Popf;<sup>n</sup> &rarr; &Popf;<sup>n</sup> &times; &Popf;<sup>n</sup> &times; ...  &times; &Popf;<sup>n</sup>;
+* the merging map &Psi;<sub>n1,n2,...nk</sub> : &Popf;<sup>n1</sup> &times; &Popf;<sup>n2</sup> &times; ...  &times; &Popf;<sup>nk</sup> &rarr; &Popf;<sup>n1+n2+...+nk</sup> 
+* the replicating map &Omega;<sup>d</sup> = &Psi; &compfn; &Delta; : &Popf;<sup>n</sup> &rarr; &Popf;<sup>dn</sup>;
+* and the collapsing map &pi; : &Popf;<sup>n</sup> &rarr; pt.
+
+The essence of this package is a set of functions computing pushforward and pullbacks along these maps.
+
+#### Pushforwards
+
+WARNING: These function assume that the class you pass them is already normalized,
+that is, it only contains powers 0..n of the generator. If this is not the case,
+you have to use the `normalzize` function above! 
+
+TODO: maybe do this automatically.
+
+    CollapsePF[theory,A,space] 
+
+computes pushforward of `A` along &pi; from `space` to the point. So `A` lives in `space` which is a `ProjSpace[n,g]`.
+
+    PsiPF[theory,A,spaces,var] 
+
+computes the pushforward of `A` along &Psi;. Here `spaces` should be a list of projective spaces, 
+corresponding to their cartesian product. Finally `var` is the name of the generator of the target space,
+whose dimension is already determined to be the sum of the dimensions of `spaces`.
+
+    DeltaPF[theory,A,space,vars]
+    DeltaPF[theory,A,space,d   ]
+
+computes the pushforward of `A` along the diagonal map &Delta;<sup>d</sup>. Here `vars` is the list
+of generators of the different copies of &Popf;<sup>n</sup> in the target; the number `d` is
+simply the length of this list. In the second version, the number `d` is specified, and 
+the output generators will be the standard generator name with subscripts 1..d.
+
+    OmegaPF[theory,A,space,d    ] 
+    OmegaPF[theory,A,space,d,var] 
+
+computes the pushforward of `A` along the replicating map &Omega;<sup>d</sup>. 
+If the output generator name `var` is not specified, it will recycle the generator of `space`.
+
+    OmegaVecPF[theory,A,spaces,ds,var]
+
+This computes the pushforward along the composition 
+&Psi; &compfn; &Omega;<sup>d1</sup> &times; &Omega;<sup>dk</sup> &times; ... &times; &Omega;<sup>dk</sup>.
+It is assumed that `Length[spaces] == Length[ds]`.
+
+#### Pullbacks
+
+WARNING: these are not really tested (and maybe not even implemented in some cases)!
+The conventions are the same as with the pushforwards above.
+
+    OmegaPB[theory,A,space,d,var] 
+
+computes the pullback of `A` along the replicating (or power) map
+&Omega;<sup>d</sup> = &Psi; &compfn; &Delta; : &Popf;<sup>n</sup> &rarr; &Popf;<sup>dn</sup>;
+Note: the conventions are the same as with the pushforwards, so `space` should have dimension `n`
+and *not* `d*n` !!
+
+    DeltaPB[theory,A,space,vars] 
+
+computes the pullback of `A` along the diagonal map
+&Delta;<sup>d</sup> : &Popf;<sup>n</sup> &rarr; &Popf;<sup>n</sup> &times; &Popf;<sup>n</sup> &times; ...  &times; &Popf;<sup>n</sup>;
+
+    PsiPB[theory,A,spaces,var] 
+
+computes the pullback of `A` along the merging map 
+&Psi;<sub>n1,n2,...nk</sub> : &Popf;<sup>n1</sup> &times; &Popf;<sup>n2</sup> &times; ...  &times; &Popf;<sup>nk</sup> &rarr; &Popf;<sup>n1+n2+...+nk</sup> 
+
+Remark: there are also versions of these functions for the individual theories.
+But it's recommended that you use the generic versions.
+
 
 Package `RootLoci`
 ==================
