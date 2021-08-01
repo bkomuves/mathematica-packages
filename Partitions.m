@@ -54,8 +54,8 @@ Begin[ "`Private`"]
 
 (* ------------ PARTITIONS -------------- *)
 
-emptyPartQ[part_] := Length[part] == 0
-EmptyPartQ[part_] := Length[part] == 0
+emptyPartQ[part_] := Length[Select[part,#>0&]] == 0
+EmptyPartQ[part_] := emptyPartQ[part] 
 
 Clear[dualPart];
 dualPart[{}  ] = {};
