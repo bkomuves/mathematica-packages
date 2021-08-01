@@ -3,7 +3,7 @@ Documentation for my Mathematica packages
 -----------------------------------------
 
 WARNING: this codebase is very much in flux and probably is full of bugs.
-If you find a bug please send me an email to _username_ (at) gmail.
+If you find a bug, please send me an email about it to _username_ (at) gmail.
 
 Table of content:
 
@@ -17,7 +17,7 @@ Table of content:
 Package `Useful`
 ================
 
-Assorted useful functions.
+Assorted set of useful functions.
 
 ### Lists and tuples
 
@@ -34,20 +34,20 @@ Returns the first and second element of a pair (or list), respectively.
 
     replicate[A,n] 
 
-Replicates `A`, resulting a list `{A,A,...,A}` of length `n`.
+Replicates `A`, resulting in a list `{A,A,...,A}` of length `n`.
 
     Zip[as,bs]
     Zip[as,bs,cs]
 
-Create a list of pairs (or triples) from two (or three) lists.
+Creates a list of pairs (or triples) from two (or three) lists.
 
     ZipWith[f,as,bs]
     ZipWith[f,as,bs,cs]
 
 Creates a new list by applying the function `f` to the pairs or triples made from
-the lists `as` and `bs` (and `cs`). For example:
+the elements of the lists `as` and `bs` (and `cs`). For example:
 
-    ZipWith[Plus, {100, 200, 300}, {4, 5, 6}] == {104, 205, 306}
+    > ZipWith[Plus, {100, 200, 300}, {4, 5, 6}] == {104, 205, 306}
     
 The functions
 
@@ -64,7 +64,7 @@ is equivalent to `Reverse[Sort[L]]`
 
     unique[L]
 
-Sorts and removes the duplicates from a list (making it usable as a representation of a set).
+Sorts and removes the duplicates from a list (making it usable as a representation of the set of elements).
 
     extendListWithZeros[L,n] 
 
@@ -88,7 +88,8 @@ variables `{x1,x2,x3}`
 
 tries to solve `lhs==rhs` where `p1,p2,...` are parameters and `a1,a2,...` are unknowns.
 This is similar to the built-in function `SolveAlways`, but works with more than
-one parameter.
+one parameter. This only works for polynomials though (it converts the problem to a
+system of linear equations).
 
 ### Generating functions    
     
@@ -102,8 +103,8 @@ Computes the falling factorial `x*(x-1)*(x-2)*...*(x-k+1)`.
 Converts between an ordinary generating function F(x) and an exponential generating
 function G(t), using Laplace transformation. For example:
 
-    ogf2egf[ 1 / (1-a*x) , x , t ] == Exp[ a*t ]
-    egf2ogf[ Exp[a*t]    , t , x ] == 1 / (1-a*x)
+    > ogf2egf[ 1 / (1-a*x) , x , t ] == Exp[ a*t ]
+    > egf2ogf[ Exp[a*t]    , t , x ] == 1 / (1-a*x)
 
 Of course this does not always work.
 
@@ -137,7 +138,7 @@ Available functions
 
     emptyPartQ[mu]
 
-Returns `True` for the empty partition, `False` otherwise
+Returns `True` for the empty partition, `False` otherwise.
 
     samePartitionQ[lam,mu]
 
@@ -152,7 +153,7 @@ Returns True if `mu` is a sub-partition of `lam` (note the order of arguments!).
 
 Converts a partition to an exponent vector, and vica versa. For example
 
-    toExpoVec[{4,4,2,1,1,1}] = {3,1,0,2}
+    > toExpoVec[{4,4,2,1,1,1}] == {3,1,0,2}
 
 because (4,4,2,1,1,1) = (1<sup>3</sup>, 2<sup>1</sup>, 3<sup>0</sup>, 4<sup>2</sup>).
 
@@ -162,7 +163,7 @@ because (4,4,2,1,1,1) = (1<sup>3</sup>, 2<sup>1</sup>, 3<sup>0</sup>, 4<sup>2</s
 Converts a partition to a list of (part,exponent) pairs, and vica versa. This is
 very similar to the above, but it lacks the zero exponents:
 
-    toExpoForm[{4,4,2,1,1,1}] = {{1,3},{2,1},{4,2}}
+    > toExpoForm[{4,4,2,1,1,1}] == {{1,3},{2,1},{4,2}}
 
 Basic size queries:
 
@@ -245,7 +246,7 @@ You can use other names than e,h,p,s (for example when you work for with
 multiple variable sets); these are just the default ones.
 
 The notation we use is subscripts. In case of elementary, complete and power symmetric
-polynomials, multiple subscripts means simply the product of the corresponding
+polynomials, multiple subscripts mean simply the product of the corresponding
 symmetric polynomials.
 
 You can create subscript using `mkSubscript`
@@ -262,7 +263,7 @@ For the standard names we have convenient shorthands:
     pp[3,2,1] 
 
 For Schur polynomials, there is a function `mkSchur` which works as `mkSubscript`
-but normalizes the input to a partition (possible adding a sign or returning 0).
+but normalizes the input to a partition (possibly changing the sign or returning 0).
 
     mkSchur[var,i]
     mkSchur[var,i1,i2,...]
@@ -270,14 +271,14 @@ but normalizes the input to a partition (possible adding a sign or returning 0).
 
 This works so that (hopefully...) the following identity is true:
 
-    toX(mkSchur[s,idxs],s,{x,n}) == schurWeylCharacter[idxs,{x,n}]
+    > sToX(mkSchur[s,idxs],s,{x,n}) == schurWeylCharacter[idxs,{x,n}]
 
 
 ### Conversion function
 
 TODO: implement conversions to/from power symmetric functions!
 
-In most of the functions below you can omit the variables name, in which case 
+In most of the functions below you can omit the variables name(s), in which case 
 they use the default names (eg. `e` for elementary symmetric and `s` for Schur)
 
     sToE[expr,s,e]
@@ -301,7 +302,7 @@ Converts elementary symmetric polynomials to complete homogeneous symmetric poly
     eToX[expr,e,{x,n}]
     hToX[expr,h,{x,n}]
 
-Expand Schur, elementary symmetric and complete homogenous polynomials in terms of 
+Expands Schur, elementary symmetric and complete homogenous polynomials in terms of 
 the (symmetric) variables x<sub>1</sub>, x<sub>2</sub>, ... x<sub>n</sub>.
     
     xToS[expr,{x,n},s]
@@ -312,6 +313,7 @@ Converts symmetric polynomials in the
 variables x<sub>1</sub>, x<sub>2</sub>, ... x<sub>n</sub>
 to Schur, elementary symmetric and complete homogenous polynomials. 
 
+These will fail if the input is not symmetric.
 
 ### Low-level manipulation of formulas containing symmetric polynomials
     
@@ -428,7 +430,7 @@ The functions
     Dimension[space]
     Variable[space]
 
-return the dimension and the generator of a projective space `ProjSpace[n,u]`.
+return the dimension and the generator of a projective space `ProjSpace[n,g]`.
 
 ### Available cohomology theories
 
@@ -470,7 +472,7 @@ returns the relation in the cohomology / K-theory ring of the given projective s
 
 normalizes a class A using the relation, such that only powers 0..n of the generator appear in the results.
 
-### The three maps
+### The four maps
 
 There are four important maps between these spaces:
 
@@ -479,7 +481,7 @@ There are four important maps between these spaces:
 * the replicating map &Omega;<sup>d</sup> = &Psi; &compfn; &Delta; : &Popf;<sup>n</sup> &rarr; &Popf;<sup>dn</sup>;
 * and the collapsing map &pi; : &Popf;<sup>n</sup> &rarr; pt.
 
-The essence of this package is a set of functions computing pushforward and pullbacks along these maps.
+The essence of this package is a set of functions computing pushforwards and pullbacks along these maps.
 
 #### Pushforwards
 
@@ -619,8 +621,9 @@ The class of Sym<sup>n</sup>&Popf;<sup>1</sup> = &Popf;<sup>n</sup>
     ghostClass[class,ProjSpace[m,g]] 
 
 This returns the m-th ghost class (computed via hardcoded formulas). These are
-the coefficients of the logarithmic differential of the "relative zeta" (or exponential),
-that is, the power series whose coefficients are the symmetric products.
+the coefficients of the logarithmic differential of the "relative zeta", or "exponential"
+(that is, the power series whose coefficients are the symmetric products).
+They could be also called (relative) Adams operations corresponding to the exponential.
 
     abstractGhostClass[m,S] 
 
@@ -642,26 +645,26 @@ Returns the m-th ghost class in the "umbral z-coordinates" (via hardcoded formul
     LSeries[n]
     PSeries[n]
 
-The &Lscr; and &Pscr; power series up to degree n.
+The &Lscr; and &Pscr; power series up to (weighted) degree n.
 
     LSeries[n,d]
     PSeries[n,d]
 
-The same but after the substitution x<sub>i</sub> x&map; (x<sub>i</sub>)<sup>d</sup>.
+The same but after the substitution x<sub>i</sub> &map; (x<sub>i</sub>)<sup>d</sup>.
 
     LPoly[k]
     PPoly[k]
 
-The degree k part (weighted homogeneous polynomial) of the above. Note: deg(x<sub>i</sub>)=i !
+The degree k part (weighted homogeneous polynomial) of the above. Note that deg(x<sub>i</sub>)=i.
 
     LPoly[k,d]
     PPoly[k,d]
 
-The same but after the substitution x<sub>i</sub> x&map; (x<sub>i</sub>)<sup>d</sup>.
+The same but after the substitution x<sub>i</sub> &map; (x<sub>i</sub>)<sup>d</sup>.
 
 ### Classes and invariants of coincident root loci
 
-These functions compute the classes using the recursive algorithm.
+These functions compute the classes using the recursive "cut-and-paste" algorithm.
 
     recClassOfRootLoci[class, lambda, gen] 
 
