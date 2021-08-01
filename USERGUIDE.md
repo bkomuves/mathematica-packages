@@ -127,6 +127,178 @@ These list the sub-partitions of `lam` (resp. those of weight k)
 Package `Schur`
 ===============
     
+This package implements conversion between symmetric polynomial in the standard bases
+
+* elementary symmetric polynomials: e<sub>i</sub>
+* complete homogeneous symmetric polynomials: h<sub>i</sub>
+* power symmetric polynomials: p<sub>i</sub>
+* Schur polynomials: s<sub>&lambda;</sub>
+
+You can use other names than e,h,p,s (for example when you work for with 
+multiple variable sets); these are just the default ones.
+
+The notation we use is subscripts. In case of elementary, complete and power symmetric
+polynomials, multiple subscripts means simply the product of the corresponding
+symmetric polynomials.
+
+You can create subscript using `mkSubscript`
+
+    mkSubscript[var, i]
+    mkSubscript[var, i1,i2,...]
+    mkSubscript[var,{i1,i2,...}]
+
+For the standard names we have convenient shorthands:
+
+    ss[3,2,1] 
+    ee[3,2,1] 
+    hh[3,2,1] 
+    pp[3,2,1] 
+
+For Schur polynomials, there is a function `mkSchur` which works as `mkSubscript`
+but normalizes the input to a partition (possible adding a sign or returning 0).
+
+    mkSchur[var,i]
+    mkSchur[var,i1,i2,...]
+    mkSchur[var,{i1,i2,...}]
+
+This works so that (hopefully...) the following identity is true:
+
+    toX(mkSchur[s,idxs],s,{x,n}) == schurWeylCharacter[idxs,{x,n}]
+
+
+### Conversion function
+
+TODO: implement conversions to/from power symmetric functions!
+
+In most of the functions below you can omit the variables name, in which case 
+they use the default names (eg. `e` for elementary symmetric and `s` for Schur)
+
+    sToE[expr,s,e]
+    eToS[expr,e,s] 
+
+Converts Schur polynomials to elementary symmetric polynomials and vica versa.
+Our convention with the Schur polynomial indexing is that 
+s<sub>n</sub>=h<sub>n</sub> and s<sub>1,1,...,1</sub>=e<sub>n</sub>.
+
+    sToH[expr,s,h]
+    hToS[expr,h,s]
+
+Converts Schur polynomials to complete homogeneous symmetric polynomials and vica versa.
+    
+    eToH[expr,e,h] 
+    hToE[expr,h,e]
+
+Converts elementary symmetric polynomials to complete homogeneous symmetric polynomials and vica versa.
+    
+    sToX[expr,s,{x,n}]
+    eToX[expr,e,{x,n}]
+    hToX[expr,h,{x,n}]
+
+Expand Schur, elementary symmetric and complete homogenous polynomials in terms of 
+the (symmetric) variables x<sub>1</sub>, x<sub>2</sub>, ... x<sub>n</sub>.
+    
+    xToS[expr,{x,n},s]
+    xToE[expr,{x,n},e]
+    xToH[expr,{x,n},h]
+
+Converts symmetric polynomials in the 
+variables x<sub>1</sub>, x<sub>2</sub>, ... x<sub>n</sub>
+to Schur, elementary symmetric and complete homogenous polynomials. 
+
+
+### Low-level manipulation of formulas containing symmetric polynomials
+    
+As usual, the variable names can be omitted below if you use the standard names:
+
+    expandE[expr,e]
+    expandH[expr,h]
+    expandP[expr,p]
+    expandGeneric[expr,var]
+    
+Expands terms like e<sub>3,2,2</sub> into e<sub>3</sub> e<sub>2</sub><sup>2</sup>.
+
+    collapseE[expr,e]
+    collapseH[expr,h]
+    collapseP[expr,p]
+    collapseGeneric[expr,var]
+
+Collapses terms like e<sub>3</sub> e<sub>2</sub><sup>2</sup> into e<sub>3,2,2</sub>.
+
+    collectS[expr,s]
+    collectE[expr,e]
+    collectH[expr,h]
+    collectP[expr,p]
+    collectGeneric[expr,var]
+
+Collects coefficients of variables like e<sub>3,2,2</sub> together.
+
+    coeffsGeneric[expr,var] 
+
+Returns the list of `{idxs,coefficient}` pairs where `idxs` means `mkSubscript[var,idxs]`
+
+    coeffsGenericBi[expr,var1,var2] 
+
+Similar to the previous, but works with two variable sets at the same times, returning a list of
+`{idxs1,idxs2,coefficient}` triples
+
+
+### Individual symmetric functions
+
+    schurWeylCharacter[lam,{x,n}] 
+
+This implements the Weyl character formula for Schur polynomials.
+    
+    JacobiTrudiE[lam,e] 
+    JacobiTrudiH[lam,h] 
+
+Returns the Jacobi-Trudi determinant for the Schur polynomial s<sub>&lambda;</sub> in terms of elementary 
+(resp. complete homogeneous) symmetric polynomials.
+    
+    lookupEinS[lam,s] 
+    lookupHinS[lam,s] 
+
+Looks up the expansion of e<sub>&lambda;</sub> resp. h<sub>&lambda;</sub> in terms of Schur polynomials 
+(these are cached, so it's only slow when called at the first time).
+
+    lookupSinH[lam,h] 
+    lookupSinE[lam,e]
+
+Looks up the expansion of s<sub>&lambda;</sub> terms of in complete homogeneous resp. elementary symmetric polynomials.
+
+    lookupEinH[lam,h] 
+    lookupHinE[lam,e] 
+
+Looks up the expansion of e<sub>&lambda;</sub> in terms of complete homogeneous symmetric polynomials
+and vica versa.
+
+
+### Branching rule coefficients
+
+TODO: implement Littlewood-Richardson and other coefficients
+    
+    EMatrix[lam,mu,n] 
+
+This is the matrix E<sub>&lambda;/&mu;</sub>(n), whose determinant appear in the expansion of total Chern class of tensor products.
+
+    EDet[lam,mu,n] 
+
+The the determinant det[E<sub>&lambda;/&mu;</sub>(n)] which appears in the expansion of total Chern class of tensor products.
+
+
+### Miscelleneous
+
+    lexSort[Llist] 
+
+Lexicographical sort of a list of lists.
+
+    lexCompare[list1,list1] 
+
+Lexicographical comparison of two lists (-1 = LT, 0 = EQ, +1 = GT).
+
+    lexMaximumBy[list,fun] 
+
+Returns the lexicographically largest element after applying fun.
+    
     
 Package `SymP1`
 ===============

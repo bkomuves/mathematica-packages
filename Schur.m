@@ -44,10 +44,10 @@ collapseE::usage = "collapseE[expr,e] collapes terms like e[3]*e[2]^2 into e[3,2
 collapseH::usage = "collapseH[expr,h] collapes terms like h[3]*h[2]^2 into h[3,2,2]"
 collapseP::usage = "collapseP[expr,p] collapes terms like p[3]*p[2]^2 into p[3,2,2]"
 
-collectS::usage = "collectS[expr,e] collects the coefficients of vriables like s[3,2,2] together"
-collectE::usage = "collectE[expr,e] collects the coefficients of vriables like e[3,2,2] together"
-collectH::usage = "collectH[expr,e] collects the coefficients of vriables like h[3,2,2] together"
-collectP::usage = "collectP[expr,e] collects the coefficients of vriables like p[3,2,2] together"
+collectS::usage = "collectS[expr,s] collects the coefficients of variables like s[3,2,2] together"
+collectE::usage = "collectE[expr,e] collects the coefficients of variables like e[3,2,2] together"
+collectH::usage = "collectH[expr,h] collects the coefficients of variables like h[3,2,2] together"
+collectP::usage = "collectP[expr,p] collects the coefficients of variables like p[3,2,2] together"
 
 expandGeneric  ::usage = "expandGeneric[expr,var] expands terms like var[3,2,2] into var[3]*var[2]^2"
 collapseGeneric::usage = "collapseGeneric[expr,var] collapes terms like var[3]*var[2]^2 into var[3,2,2]"
@@ -73,7 +73,7 @@ xToE::usage = "xToE[expr,{x,n},e] converts symmetric polynomials in x1..xn to el
 xToH::usage = "xToH[expr,{x,n},h] converts symmetric polynomials in x1..xn to complete homogoneous polynomials"
 
 lookupEinS::usage = "lookupEinS[lam,s] looks up the expansion of e[lam] in Schur polynomials"
-lookupHinS::usage = "lookupEinS[lam,s] looks up the expansion of h[lam] in Schur polynomials"
+lookupHinS::usage = "lookupHinS[lam,s] looks up the expansion of h[lam] in Schur polynomials"
 
 lookupEinH::usage = "lookupEinH[lam,h] looks up the expansion of e[lam] in complete homogeneous symmetric polynomials"
 lookupHinE::usage = "lookupHinE[lam,e] looks up the expansion of h[lam] in elementary symmetric polynomials"
