@@ -49,6 +49,8 @@ collectE::usage = "collectE[expr,e] collects the coefficients of variables like 
 collectH::usage = "collectH[expr,h] collects the coefficients of variables like h[3,2,2] together"
 collectP::usage = "collectP[expr,p] collects the coefficients of variables like p[3,2,2] together"
 
+transposeSchur::usage = "transposeSchur[X,s] transposes the indices of the s[...] using partition duality"
+
 expandGeneric  ::usage = "expandGeneric[expr,var] expands terms like var[3,2,2] into var[3]*var[2]^2"
 collapseGeneric::usage = "collapseGeneric[expr,var] collapes terms like var[3]*var[2]^2 into var[3,2,2]"
 collectGeneric ::usage = "collectGeneric[expr,var] collects the coefficients of variables like var[3,2,2] together"
@@ -86,10 +88,20 @@ EDet   ::usage = "EDet[lam,mu,n] is the determinant E_{lam/mu}(n) which appears 
 
 schurWeylCharacter::usage = "schurWeylCharacter[lam,{x,n}] implements the Weyl character formula for Schur polynomials"
 
-(*
 extractSubscripts::usage = "debugging"
 filterSubscripts::usage  = "debugging"
-*)
+
+addGrading::usage = "addGrading[X,s,h] multiplies each term s[...] by h^deg"
+
+eToDiffX::usage = "eToDiffX[X,e,{x,n},{y,m}] makes the subsitution c(E) -> c(x-y)"
+eToDiffE::usage = "eToDiffE[X,e,{c,n},{d,m}] makes the subsitution c(E) -> c(A-B)" 
+eToDiffS::usage = "eToDiffS[X,e,{s,n},{t,m}] makes the subsitution c(E) -> s(A-B)" 
+sToDiffX::usage = "eToDiffE[X,s,{x,n},{y,m}] makes the subsitution s(E) -> s(x-y)"
+sToDiffE::usage = "sToDiffE[X,s,{c,n},{d,m}] makes the subsitution s(E) -> c(A-B)" 
+sToDiffS::usage = "sToDiffS[X,s,{s,n},{s,m}] makes the subsitution s(E) -> s(A-B)" 
+
+fromDiffS::usage = "fromDiffS[X,{s,n},{t,m},S] tries to convert something in (s,t) to a polynomial in the difference alphabet S"
+fromDiffX::usage = "fromDiffX[X,{x,n},{y,m},S,deg] tries to convert something in (x,y) to a polynomial in the difference alphabet S"
 
 (* ========================================================================== *)
 
@@ -346,6 +358,13 @@ coeffsGenericBi[expr_, sr_, sq_] := Module[
    Table[{ridx, pair[[1]], pair[[2]]}, {pair, 
      coeffsGeneric[cf, sq]}];
   Flatten[Map[f, A], 1]
+  ]
+
+(* ---------- transpose indices of Schur polys  ---------- *)
+
+transposeSchur[A_, s_] := Module[{T},
+  T = coeffsGeneric[A, s];
+  Sum[pair[[2]]*mkSchur[s, dualPart[pair[[1]]]], {pair, T}]
   ]
 
 (* ---------- collect ---------- *)
@@ -625,6 +644,103 @@ xToS[term_, {x_, n_}, s_] := xToS[term, x, n, s]
 xToS[term_,  x_, n_ , s_] := Module[ {e},
  eToS[ xToE[term, {x, n}, e], e, {s,n}] ]
 
+
+(* ----------------------------------------------- *)
+(* difference alphabets *)
+
+eToDiffX[X0_, e_, {x_, n_}, {y_, m_}] := Module[
+  {X, A, B, C, N, h},
+  X = Expand[X0];
+  X = expandE[X, e];
+  N = Max[Join[{0},Flatten[extractSubscripts[X, e]]]];
+  A = Product[1 + h*Subscript[y, j], {j, 1, m}];
+  B = Product[1 + h*Subscript[x, i], {i, 1, n}];
+  C = Normal[Series[A/B, {h, 0, N}]];
+  Expand[ X /. Table[Subscript[e, i] -> Coefficient[C, h, i], {i, 1, N}] ]
+  ]
+
+eToDiffE[X0_, e_, {c_, n_}, {d_, m_}] := Module[
+  {X, A, B, C, N, h},
+  X = Expand[X0];
+  X = expandE[X, e];
+  N = Max[Join[{0},Flatten[extractSubscripts[X, e]]]];
+  A = 1 + Sum[ h^j * Subscript[d, j], {j, 1, m}];
+  B = 1 + Sum[ h^i * Subscript[c, i], {i, 1, n}];
+  C = Normal[Series[A/B, {h, 0, N}]];
+  Expand[ X /. Table[Subscript[e, i] -> Coefficient[C, h, i], {i, 1, N}] ]
+  ]
+
+sToDiffE[X_, s_, cn_, dm_] := Module[
+  {A, e},
+  A = sToE[X, s, e];
+  eToDiffE[A, e, cn, dm]
+  ]
+
+eToDiffS[X_, e_, {s_, n_}, {t_, m_}] := Module[
+  {A, c, d},
+  A = eToDiffE[X, e, {c, n}, {d, m}];
+  A = eToS[A, c, {s, n}];
+  A = eToS[A, d, {t, m}];
+  Expand[A]
+  ]
+
+sToDiffS[X_, s_, sn_, tm_] := Module[
+  {A, e},
+  A = sToE[X, s, e];
+  eToDiffS[A, e, sn, tm]
+  ]
+
+sToDiffX[X_, s_, xn_, ym_] := Module[
+  {A, e},
+  A = sToE[X, s, e];
+  eToDiffX[A, e, xn, ym]
+  ]
+
+(* multiplies each term by h^deg *)
+addGrading[X0_, s_, h_] := Module[{X, A, mk},
+  X = Expand[X0];
+  A = coeffsGeneric[X, s];
+  mk[{idx_, cf_}] := cf*h^SumList[idx] * mkSubscript[s, idx];
+  Collect[Sum[mk[pair], {pair, A}], h]
+  ]
+
+(* tries to convert to a homogeneous expression in a difference alphabet *)
+fromDiffHomogeneous[X_, 0   , {u_, n_}, {v_, m_}, s_] := X;
+fromDiffHomogeneous[0,  deg_, {u_, n_}, {v_, m_}, s_] := 0;
+fromDiffHomogeneous[X_, deg_, {u_, n_}, {v_, m_}, s_] := 
+ Module[{parts, unkn, vars, goal, A, lhs, rhs, sols},
+  parts = partitions[deg];
+  unkn = Table[Subscript[A, p], {p, parts}];
+  goal = Sum[Subscript[A, p]*mkSchur[s, p], {p, parts}];
+  lhs = sToDiffS[goal, s, {u, n}, {v, m}];
+  rhs = Expand[X];
+  vars = Complement[Union[Variables[lhs], Variables[rhs]], unkn];
+  sols = mySolveAlways[lhs, rhs, vars, unkn];
+  If[Length[sols] != 1, 
+   Throw["fromDiffHomogeneous: no solution (or too many)"],
+   goal /. sols[[1]]
+   ]
+  ]
+
+(* tries to convert to an expression given in two set of Schur polynomials into Schur polynomials in the difference alphabet *)
+fromDiffS[X0_, {u_, n_}, {v_, m_}, s_] := Module[{X, deg, h},
+  X = Expand[X0];
+  X = addGrading[X, u, h];
+  X = addGrading[X, v, h];
+  deg = Exponent[X, h];
+  Sum[fromDiffHomogeneous[Coefficient[X, h, d], d, {u, n}, {v, m}, s], {d, 0, deg}]
+  ]
+
+(* tries to convert to an expression given in two set of roots into Schur polynomials in the difference alphabet *)
+fromDiffX[X0_, {a_, n_}, {b_, m_}, ss_, deg_] := Module[{X, Y, h, ser, s, t, i, j},
+  X = X0;
+  X = X /. Table[Subscript[a, i] -> h*Subscript[a, i], {i, 1, n}];
+  X = X /. Table[Subscript[b, j] -> h*Subscript[b, j], {j, 1, m}];
+  ser = Normal[Series[X, {h, 0, deg}]];
+  Y = xToS[ser /. {h -> 1}, {a, n}, s];
+  Y = xToS[Y, {b, m}, t];
+  fromDiffS[Y /. {h -> 1}, {s, n}, {t, m}, ss]
+  ]
 
 (* ----------------------------------------------- *)
 
